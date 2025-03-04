@@ -2,9 +2,11 @@ name: Maven clean install
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - '**'
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - '**'
 
 jobs:
   build:
@@ -13,10 +15,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK 21
+      - name: Set up JDK 19
         uses: actions/setup-java@v3
         with:
-          java-version: '21'
+          java-version: '19'
           distribution: 'temurin'
           cache: maven
       - name: Build with Maven
