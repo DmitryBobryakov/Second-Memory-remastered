@@ -1,0 +1,130 @@
+package mipt.app.secondmemory.repository;
+
+import io.minio.CopyObjectArgs;
+import io.minio.CopySource;
+import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
+import io.minio.errors.ErrorResponseException;
+import io.minio.errors.InsufficientDataException;
+import io.minio.errors.InternalException;
+import io.minio.errors.InvalidResponseException;
+import io.minio.errors.ServerException;
+import io.minio.errors.XmlParserException;
+import io.minio.http.Method;
+import lombok.extern.slf4j.Slf4j;
+import mipt.app.secondmemory.MyMinIOClient;
+import org.springframework.stereotype.Repository;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
+
+@Repository
+@Slf4j
+public class FilesRepositoryImpl implements FilesRepository {
+    private static final MinioClient client = MyMinIOClient.getClient();
+
+    @Override
+    public ModelAndView download(String bucketName, String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, NoSuchAlgorithmException {
+        log.info("Функция по скачиванию файла вызвана в репозитории");
+        String url =
+                client.getPresignedObjectUrl(
+                        GetPresignedObjectUrlArgs.builder()
+                                .method(Method.GET)
+                                .bucket(bucketName)
+                                .object(key)
+                                .build());
+        return new ModelAndView("redirect:" + url);
+    }
+
+    @Override
+    public Map<String, String> upload(String bucketName, MultipartFile file) throws IOException, InsufficientDataException, ErrorResponseException, InvalidKeyException, InvalidResponseException, XmlParserException, NoSuchAlgorithmException, InternalException, ServerException {
+        log.info("Функция по загрузке файла вызвана в репозитории");
+
+        String fileName = file.getOriginalFilename();
+        InputStream fileInputStream = file.getInputStream();
+        client.putObject(
+                PutObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(fileName)
+                        .stream(fileInputStream, -1, 10485760)
+                        .build());
+        Map<String, String> map = new HashMap<>();
+        // Populate the map with file details
+        map.put("fileName", file.getOriginalFilename());
+        map.put("fileSize", file.getSize() + "");
+        map.put("fileContentType", file.getContentType());
+
+        // File upload is successful
+        map.put("message", "File upload done");
+        return map;
+    }
+
+    @Override
+    public String rename(String bucketName, String oldKey, String newKey) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        log.info("Функция по переименованию файла вызвана в репозитории");
+        client.copyObject(
+                CopyObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(newKey)
+                        .source(
+                                CopySource.builder()
+                                        .bucket(bucketName)
+                                        .object(oldKey)
+                                        .build())
+                        .build());
+        delete(bucketName, oldKey);
+        return "good rename";
+    }
+
+    @Override
+    public String delete(String bucketName, String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        log.info("Функция по удалению файла вызвана в репозитории");
+        client.removeObject(
+                RemoveObjectArgs.builder().bucket(bucketName).object(key).build());
+        return "good delete";
+    }
+
+
+    @Override
+    public String moveInBucket(String bucketName, String fileName, String oldPath, String newPath) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        log.info("Функция по перемещению файла внутри бакета вызвана в репозитории");
+        String key = oldPath + "/" + fileName;
+        client.copyObject(
+                CopyObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(newPath + "/" + fileName)
+                        .source(
+                                CopySource.builder()
+                                        .bucket(bucketName)
+                                        .object(key)
+                                        .build())
+                        .build());
+        delete(bucketName, key);
+        return "good move in bucket";
+    }
+
+    @Override
+    public String moveBetweenBuckets(String oldBucketName, String newBucketName, String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        log.info("Функция по перемещению файла через баакеты вызвана в репозитории");
+        client.copyObject(
+                CopyObjectArgs.builder()
+                        .bucket(newBucketName)
+                        .object(key)
+                        .source(
+                                CopySource.builder()
+                                        .bucket(oldBucketName)
+                                        .object(key)
+                                        .build())
+                        .build());
+        delete(oldBucketName, key);
+        return "good move between buckets";
+    }
+}
