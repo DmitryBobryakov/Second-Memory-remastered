@@ -14,7 +14,7 @@ import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.http.Method;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.MyMinIOClient;
+import mipt.app.secondmemory.config.MinioClientConfig;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
@@ -23,13 +23,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
 
 @Repository
 @Slf4j
-public class FilesRepositoryImpl implements FilesRepository {
-    private static final MinioClient client = MyMinIOClient.getClient();
+public class FilesS3RepositoryImpl implements FilesS3Repository {
+    private static final MinioClient client = MinioClientConfig.getClient();
 
     @Override
     public ModelAndView download(String bucketName, String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, NoSuchAlgorithmException {
@@ -45,26 +43,19 @@ public class FilesRepositoryImpl implements FilesRepository {
     }
 
     @Override
-    public Map<String, String> upload(String bucketName, MultipartFile file) throws IOException, InsufficientDataException, ErrorResponseException, InvalidKeyException, InvalidResponseException, XmlParserException, NoSuchAlgorithmException, InternalException, ServerException {
+    public String upload(String bucketName, MultipartFile file) throws IOException, InsufficientDataException, ErrorResponseException, InvalidKeyException, InvalidResponseException, XmlParserException, NoSuchAlgorithmException, InternalException, ServerException {
         log.info("Функция по загрузке файла вызвана в репозитории");
 
         String fileName = file.getOriginalFilename();
         InputStream fileInputStream = file.getInputStream();
+
         client.putObject(
                 PutObjectArgs.builder()
                         .bucket(bucketName)
                         .object(fileName)
                         .stream(fileInputStream, -1, 10485760)
                         .build());
-        Map<String, String> map = new HashMap<>();
-        // Populate the map with file details
-        map.put("fileName", file.getOriginalFilename());
-        map.put("fileSize", file.getSize() + "");
-        map.put("fileContentType", file.getContentType());
-
-        // File upload is successful
-        map.put("message", "File upload done");
-        return map;
+        return "success";
     }
 
     @Override
@@ -81,7 +72,7 @@ public class FilesRepositoryImpl implements FilesRepository {
                                         .build())
                         .build());
         delete(bucketName, oldKey);
-        return "good rename";
+        return "success";
     }
 
     @Override
@@ -89,7 +80,7 @@ public class FilesRepositoryImpl implements FilesRepository {
         log.info("Функция по удалению файла вызвана в репозитории");
         client.removeObject(
                 RemoveObjectArgs.builder().bucket(bucketName).object(key).build());
-        return "good delete";
+        return "success";
     }
 
 
@@ -108,7 +99,7 @@ public class FilesRepositoryImpl implements FilesRepository {
                                         .build())
                         .build());
         delete(bucketName, key);
-        return "good move in bucket";
+        return "success";
     }
 
     @Override
@@ -125,6 +116,6 @@ public class FilesRepositoryImpl implements FilesRepository {
                                         .build())
                         .build());
         delete(oldBucketName, key);
-        return "good move between buckets";
+        return "success";
     }
 }

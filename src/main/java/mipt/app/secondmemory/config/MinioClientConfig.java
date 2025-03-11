@@ -1,9 +1,9 @@
-package mipt.app.secondmemory;
+package mipt.app.secondmemory.config;
 
 import io.minio.MinioClient;
 import lombok.Getter;
 
-public class MyMinIOClient {
+public class MinioClientConfig {
     @Getter
     private static final MinioClient client;
 

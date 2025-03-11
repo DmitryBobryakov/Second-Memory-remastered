@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.exception.FileMemoryOverflowException;
+import mipt.app.secondmemory.exception.FileServerException;
 import mipt.app.secondmemory.service.FilesService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.AntPathMatcher;
@@ -28,7 +29,6 @@ import org.springframework.web.servlet.ModelAndView;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Map;
 
 @RestController
 @Slf4j
@@ -48,13 +48,13 @@ public class FilesControllerImpl implements FilesController {
 
     @Override
     @PostMapping("/files/upload/{bucketName}")
-    public ResponseEntity<Map<String, String>> uploadSingle(@PathVariable String bucketName, @RequestParam("file") MultipartFile file) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, FileMemoryOverflowException {
+    public ResponseEntity<String> uploadSingle(@PathVariable String bucketName, @RequestParam("file") MultipartFile file) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, FileMemoryOverflowException, FileServerException {
         return ResponseEntity.ok(filesService.uploadSingle(bucketName, file));
     }
 
     @Override
     @PatchMapping("/files/rename/{bucketName}/{oldKey}")
-    public ResponseEntity<String> rename(@PathVariable String bucketName, @PathVariable String oldKey, @RequestParam(name = "name") String newKey) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    public ResponseEntity<String> rename(@PathVariable String bucketName, @PathVariable String oldKey, @RequestParam(name = "name") String newKey) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, FileServerException {
         return ResponseEntity.ok(filesService.rename(bucketName, oldKey, newKey));
     }
 

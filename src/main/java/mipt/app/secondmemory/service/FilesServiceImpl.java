@@ -9,11 +9,14 @@ import io.minio.errors.InternalException;
 import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.MyMinIOClient;
+import mipt.app.secondmemory.config.MinioClientConfig;
 import mipt.app.secondmemory.exception.FileMemoryOverflowException;
-import mipt.app.secondmemory.repository.FilesRepository;
+import mipt.app.secondmemory.exception.FileServerException;
+import mipt.app.secondmemory.repository.FilesJpaRepository;
+import mipt.app.secondmemory.repository.FilesS3Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
@@ -22,15 +25,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Map;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class FilesServiceImpl implements FilesService {
     private static final long CAPACITY = 1024 * 1024 * 10;
-    private final FilesRepository filesRepository;
-    private static final MinioClient client = MyMinIOClient.getClient();
+    private final FilesS3Repository filesS3Repository;
+    private final FilesJpaRepository filesJpaRepository;
+    private static final MinioClient client = MinioClientConfig.getClient();
 
     @Override
     public ModelAndView download(String bucketName, String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
@@ -39,11 +42,12 @@ public class FilesServiceImpl implements FilesService {
         if (!found) {
             throw new FileNotFoundException();
         }
-        return filesRepository.download(bucketName, key);
+        return filesS3Repository.download(bucketName, key);
     }
 
     @Override
-    public Map<String, String> uploadSingle(String bucketName, MultipartFile file) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, FileMemoryOverflowException {
+    @Transactional
+    public String uploadSingle(String bucketName, MultipartFile file) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, FileMemoryOverflowException, FileServerException {
         log.info("Функция по загрузке файла вызвана в сервисе");
         boolean found = client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
         if (!found) {
@@ -52,20 +56,20 @@ public class FilesServiceImpl implements FilesService {
         if (file.getSize() > CAPACITY) {
             throw new FileMemoryOverflowException();
         }
-        return filesRepository.upload(bucketName, file);
+        return filesS3Repository.upload(bucketName, file);
     }
 
     @Override
-    public String rename(String bucketName, String oldKey, String newKey) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    public String rename(String bucketName, String oldKey, String newKey) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, FileServerException {
         log.info("Функция по переименованию файла вызвана в сервисе");
         if (oldKey.equals(newKey)) {
-            return "good rename";
+            return "success";
         }
         boolean found = client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
         if (!found) {
             throw new FileNotFoundException();
         }
-        return filesRepository.rename(bucketName, oldKey, newKey);
+        return filesS3Repository.rename(bucketName, oldKey, newKey);
     }
 
     @Override
@@ -75,7 +79,7 @@ public class FilesServiceImpl implements FilesService {
         if (!found) {
             throw new FileNotFoundException();
         }
-        return filesRepository.delete(bucketName, key);
+        return filesS3Repository.delete(bucketName, key);
     }
 
     @Override
@@ -85,7 +89,7 @@ public class FilesServiceImpl implements FilesService {
         if (!found) {
             throw new FileNotFoundException();
         }
-        return filesRepository.moveInBucket(bucketName, fileName, oldPath, newPath);
+        return filesS3Repository.moveInBucket(bucketName, fileName, oldPath, newPath);
     }
 
     @Override
@@ -96,6 +100,6 @@ public class FilesServiceImpl implements FilesService {
         if (!foundInNewBucket || !foundInOldBucket) {
             throw new FileNotFoundException();
         }
-        return filesRepository.moveBetweenBuckets(oldBucketName, newBucketName, key);
+        return filesS3Repository.moveBetweenBuckets(oldBucketName, newBucketName, key);
     }
 }

@@ -5,6 +5,21 @@ spring:
     multipart:
       max-request-size: 10MB
       max-file-size: 1MB
+  datasource:
+    url: jdbc:postgresql://localhost:5435/postgres
+    username: postgres
+    password: changeme
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
