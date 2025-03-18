@@ -1,6 +1,5 @@
 package mipt.app.secondmemory.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.RequestUserDto;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
 public class UsersService {
   private final UsersRepository usersRepository;
 
@@ -54,7 +52,7 @@ public class UsersService {
         "UsersService -> updateUser() -> Accepted request for user with email {}",
         updatedUser.getEmail());
     User user =
-        usersRepository.findByUuid(updatedUser.getUuid()).orElseThrow(UserNotFoundException::new);
+        usersRepository.findById(updatedUser.getId()).orElseThrow(UserNotFoundException::new);
     user.setName(updatedUser.getName());
     user.setPassword(BCrypt.hashpw(updatedUser.getPassword(), BCrypt.gensalt()));
     usersRepository.save(user);

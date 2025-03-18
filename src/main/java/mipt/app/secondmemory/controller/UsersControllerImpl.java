@@ -2,7 +2,7 @@ package mipt.app.secondmemory.controller;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Date;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.RequestUserDto;
@@ -10,6 +10,7 @@ import mipt.app.secondmemory.dto.UserDto;
 import mipt.app.secondmemory.entity.Session;
 import mipt.app.secondmemory.entity.User;
 import mipt.app.secondmemory.exception.AuthenticationDataMismatchException;
+import mipt.app.secondmemory.exception.SessionNotFoundException;
 import mipt.app.secondmemory.exception.UserNotFoundException;
 import mipt.app.secondmemory.repository.SessionsRepository;
 import mipt.app.secondmemory.repository.UsersRepository;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -33,12 +33,12 @@ public class UsersControllerImpl implements UsersController {
   private final UsersRepository usersRepository;
   private final UsersService usersService;
   private final SessionsRepository sessionsRepository;
-  private final Date date = new Date();
+  private final Instant date = Instant.now();
 
   @Override
   @PostMapping("/signin")
   public ResponseEntity<String> authenticateUser(
-      @RequestBody RequestUserDto userDto, HttpServletResponse response)
+      RequestUserDto userDto, HttpServletResponse response)
       throws UserNotFoundException, AuthenticationDataMismatchException {
     log.info(
         "UsersController -> authenticate() -> Accepted request with email {}", userDto.getEmail());
@@ -50,7 +50,7 @@ public class UsersControllerImpl implements UsersController {
     Cookie cookie =
         new Cookie(
             "data",
-            BCrypt.hashpw(String.valueOf(user.getUuid() + date.getTime()), BCrypt.gensalt()));
+            BCrypt.hashpw(String.valueOf(user.getId() + date.getEpochSecond()), BCrypt.gensalt()));
     cookie.setPath("/");
     cookie.setMaxAge(86400);
     cookie.setSecure(true);
@@ -58,14 +58,21 @@ public class UsersControllerImpl implements UsersController {
     response.addCookie(cookie);
     response.setContentType("text/plain");
 
-    sessionsRepository.save(new Session(user.getUuid(), cookie.getValue()));
+    try {
+      Session session =
+          sessionsRepository.findByUserId(user.getId()).orElseThrow(SessionNotFoundException::new);
+      session.setCookie(cookie.getValue());
+      sessionsRepository.save(session);
+    } catch (SessionNotFoundException e) {
+      sessionsRepository.save(new Session(cookie.getValue(), user));
+    }
 
     return ResponseEntity.ok("You have successfully logged in!");
   }
 
   @Override
   @PostMapping("/signup")
-  public ResponseEntity<UserDto> registerUser(@RequestBody User user) {
+  public ResponseEntity<UserDto> registerUser(User user) {
     log.info(
         "UsersController -> registerUser() -> Accepted request with email {}", user.getEmail());
     usersService.create(user);
@@ -77,12 +84,11 @@ public class UsersControllerImpl implements UsersController {
 
   @Override
   @PatchMapping("/update")
-  public ResponseEntity<String> updateUser(
-      @RequestBody User user, @CookieValue("data") String cookieValue)
+  public ResponseEntity<String> updateUser(User user, @CookieValue("data") String cookieValue)
       throws UserNotFoundException {
     log.info("UsersController -> updateUser() -> Accepted request with email {}", user.getEmail());
 
-    Session session = sessionsRepository.findByUuid(user.getUuid());
+    Session session = sessionsRepository.findByUserId(user.getId()).orElseThrow();
     if (session.getCookie().equals(cookieValue)) {
       usersService.updateUser(user);
     } else {
@@ -99,14 +105,12 @@ public class UsersControllerImpl implements UsersController {
   @Override
   @DeleteMapping("/delete/{username}")
   public ResponseEntity<String> deleteUser(
-      @PathVariable String username,
-      @RequestBody String email,
-      @CookieValue("data") String cookieValue)
+      @PathVariable String username, String email, @CookieValue("data") String cookieValue)
       throws UserNotFoundException {
     log.info("UsersController -> deleteUser() -> Accepted request with email {}", email);
 
-    User user = usersRepository.findByEmail(email).orElseThrow();
-    Session session = sessionsRepository.findByUuid(user.getUuid());
+    User user = usersRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+    Session session = sessionsRepository.findByUserId(user.getId()).orElseThrow();
     if (session.getCookie().equals(cookieValue)) {
       usersService.deleteUser(email);
     } else {
@@ -120,11 +124,11 @@ public class UsersControllerImpl implements UsersController {
 
   @Override
   @PostMapping("/logout")
-  public ResponseEntity<String> logOut(
-      @RequestBody String requestUuid, HttpServletResponse response) {
+  public ResponseEntity<String> logOut(String requestUuid, HttpServletResponse response)
+      throws UserNotFoundException {
     log.info("UsersController -> logOut() -> Accepted request user with uuid {}", requestUuid);
     Long uuid = Long.parseLong(requestUuid);
-    Session session = sessionsRepository.findByUuid(uuid);
+    Session session = sessionsRepository.findByUserId(uuid).orElseThrow(UserNotFoundException::new);
     sessionsRepository.delete(session);
 
     Cookie cookie = new Cookie("data", null);

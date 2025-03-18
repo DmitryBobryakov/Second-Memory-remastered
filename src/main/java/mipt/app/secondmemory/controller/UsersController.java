@@ -65,5 +65,6 @@ public interface UsersController {
 
   @Operation(summary = "Выйти из аккаунта")
   @ApiResponse(responseCode = "200", description = "Пользователь вышел из аккаунта")
-  ResponseEntity<String> logOut(@RequestBody String uuid, HttpServletResponse response);
+  ResponseEntity<String> logOut(@RequestBody String uuid, HttpServletResponse response)
+      throws UserNotFoundException;
 }
