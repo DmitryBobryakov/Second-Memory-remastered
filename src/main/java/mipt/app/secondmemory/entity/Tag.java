@@ -22,7 +22,7 @@ import java.util.Set;
 @Table(name = "tag")
 @Getter
 @Schema(name = "Tag", description = "Сущность Тега")
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tag {

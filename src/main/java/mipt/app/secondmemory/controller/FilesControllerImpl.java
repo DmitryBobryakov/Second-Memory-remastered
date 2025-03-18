@@ -32,7 +32,6 @@ public class FilesControllerImpl implements FilesController {
     @Override
     @SneakyThrows
     public ResponseEntity<Void> uploadSingle(String bucketName, MultipartFile file) {
-
         filesService.uploadSingle(bucketName, file);
         return ResponseEntity.ok().build();
     }

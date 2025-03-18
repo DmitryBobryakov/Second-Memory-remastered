@@ -1,6 +1,6 @@
-create table file_tag
+create table if not exists file_tag
 (
-    file_id BIGINT REFERENCES file (id) NOT NULL,
-    tag_id  BIGINT REFERENCES tag (id)  NOT NULL,
-    PRIMARY KEY (file_id, tag_id)
+    file_id bigint references file (id),
+    tag_id  bigint references tag (id),
+    primary key (file_id, tag_id)
 );
