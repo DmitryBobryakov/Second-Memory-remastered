@@ -14,7 +14,7 @@ import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.http.Method;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.config.MinioClientConfig;
+import mipt.app.secondmemory.configuration.MinioClientConfig;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
@@ -26,10 +26,9 @@ import java.security.NoSuchAlgorithmException;
 
 @Repository
 @Slf4j
-public class FilesS3RepositoryImpl implements FilesS3Repository {
+public class FilesS3RepositoryImpl {
     private static final MinioClient client = MinioClientConfig.getClient();
 
-    @Override
     public ModelAndView download(String bucketName, String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, NoSuchAlgorithmException {
         log.info("Функция по скачиванию файла вызвана в репозитории");
         String url =
@@ -42,8 +41,8 @@ public class FilesS3RepositoryImpl implements FilesS3Repository {
         return new ModelAndView("redirect:" + url);
     }
 
-    @Override
-    public String upload(String bucketName, MultipartFile file) throws IOException, InsufficientDataException, ErrorResponseException, InvalidKeyException, InvalidResponseException, XmlParserException, NoSuchAlgorithmException, InternalException, ServerException {
+
+    public void upload(String bucketName, MultipartFile file) throws IOException, InsufficientDataException, ErrorResponseException, InvalidKeyException, InvalidResponseException, XmlParserException, NoSuchAlgorithmException, InternalException, ServerException {
         log.info("Функция по загрузке файла вызвана в репозитории");
 
         String fileName = file.getOriginalFilename();
@@ -55,11 +54,10 @@ public class FilesS3RepositoryImpl implements FilesS3Repository {
                         .object(fileName)
                         .stream(fileInputStream, -1, 10485760)
                         .build());
-        return "success";
     }
 
-    @Override
-    public String rename(String bucketName, String oldKey, String newKey) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+
+    public void rename(String bucketName, String oldKey, String newKey) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         log.info("Функция по переименованию файла вызвана в репозитории");
         client.copyObject(
                 CopyObjectArgs.builder()
@@ -72,20 +70,17 @@ public class FilesS3RepositoryImpl implements FilesS3Repository {
                                         .build())
                         .build());
         delete(bucketName, oldKey);
-        return "success";
     }
 
-    @Override
-    public String delete(String bucketName, String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+
+    public void delete(String bucketName, String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         log.info("Функция по удалению файла вызвана в репозитории");
         client.removeObject(
                 RemoveObjectArgs.builder().bucket(bucketName).object(key).build());
-        return "success";
     }
 
 
-    @Override
-    public String moveInBucket(String bucketName, String fileName, String oldPath, String newPath) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    public void moveInBucket(String bucketName, String fileName, String oldPath, String newPath) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         log.info("Функция по перемещению файла внутри бакета вызвана в репозитории");
         String key = oldPath + "/" + fileName;
         client.copyObject(
@@ -99,11 +94,10 @@ public class FilesS3RepositoryImpl implements FilesS3Repository {
                                         .build())
                         .build());
         delete(bucketName, key);
-        return "success";
     }
 
-    @Override
-    public String moveBetweenBuckets(String oldBucketName, String newBucketName, String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+
+    public void moveBetweenBuckets(String oldBucketName, String newBucketName, String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         log.info("Функция по перемещению файла через баакеты вызвана в репозитории");
         client.copyObject(
                 CopyObjectArgs.builder()
@@ -116,6 +110,5 @@ public class FilesS3RepositoryImpl implements FilesS3Repository {
                                         .build())
                         .build());
         delete(oldBucketName, key);
-        return "success";
     }
 }

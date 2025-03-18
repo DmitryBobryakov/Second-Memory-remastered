@@ -11,7 +11,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import mipt.app.secondmemory.exception.FileMemoryOverflowException;
 import mipt.app.secondmemory.exception.FileServerException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,17 +29,22 @@ import java.security.NoSuchAlgorithmException;
 @Tag(name = "File API", description = "Управление файлами")
 public interface FilesController {
 
-    ModelAndView download(@PathVariable String bucketName, HttpServletRequest request) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException;
+    @GetMapping("/files/download/{bucketName}")
+    ModelAndView download(@PathVariable(name = "bucketName") String bucketName, HttpServletRequest request) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException;
 
-    ResponseEntity<String> uploadSingle(@PathVariable String bucketName, @RequestParam("file") MultipartFile file) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, FileMemoryOverflowException, FileServerException;
+    @PostMapping("/files/upload/{bucketName}")
+    ResponseEntity<Void> uploadSingle(@PathVariable(name = "bucketName") String bucketName, @RequestParam("file") MultipartFile file) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, FileMemoryOverflowException, FileServerException;
 
-    ResponseEntity<String> rename(@PathVariable String bucketName, @PathVariable String oldKey, @RequestParam(name = "name") String newKey) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, FileServerException;
+    @PatchMapping("/files/rename/{bucketName}/{oldKey}")
+    ResponseEntity<Void> rename(@PathVariable(name = "bucketName") String bucketName, @PathVariable(name = "oldKey") String oldKey, @RequestParam(name = "name") String newKey) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, FileServerException;
 
-    ResponseEntity<String> delete(@PathVariable String bucketName, @PathVariable String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException;
+    @DeleteMapping("/files/delete/{bucketName}/{key}")
+    ResponseEntity<Void> delete(@PathVariable(name = "bucketName") String bucketName, @PathVariable(name = "key") String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException;
 
-    ResponseEntity<String> moveInBucket(@PathVariable String bucketName, @PathVariable String fileName, @RequestParam String oldPath, @RequestParam String newPath) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException;
+    @PostMapping("/files/moveInBucket/{bucketName}/{fileName}")
+    ResponseEntity<Void> moveInBucket(@PathVariable(name = "bucketName") String bucketName, @PathVariable(name = "fileName") String fileName, @RequestParam String oldPath, @RequestParam String newPath) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException;
 
-    ResponseEntity<String> moveBetweenBuckets(String oldBucketName, String newBucketName, String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException;
+    @PostMapping("/files/moveInBucket/{oldBucketName}/{newBucketName}")
+    ResponseEntity<Void> moveBetweenBuckets(@PathVariable(name = "oldBucketName") String oldBucketName, @PathVariable(name = "newBucketName") String newBucketName, @RequestParam String key) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException;
 
 }
-

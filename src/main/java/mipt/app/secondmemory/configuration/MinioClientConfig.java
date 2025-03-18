@@ -1,4 +1,4 @@
-package mipt.app.secondmemory.config;
+package mipt.app.secondmemory.configuration;
 
 import io.minio.MinioClient;
 import lombok.Getter;
