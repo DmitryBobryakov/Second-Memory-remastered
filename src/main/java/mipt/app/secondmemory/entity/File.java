@@ -7,11 +7,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "files_info")
-@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class File {
 
   @Id
@@ -41,15 +45,4 @@ public class File {
 
   @Column(name = "file_tags")
   private String fileTags;
-
-  protected File() {}
-
-  public File(String fileName, String fileOwnerId, String fileCreationDate, String fileLastModifiedDate, String fileAccessLevel, String fileTags) {
-    this.fileName = fileName;
-    this.fileOwnerId = fileOwnerId;
-    this.fileCreationDate = fileCreationDate;
-    this.fileLastModifiedDate = fileLastModifiedDate;
-    this.fileAccessLevel = fileAccessLevel;
-    this.fileTags = fileTags;
-  }
 }

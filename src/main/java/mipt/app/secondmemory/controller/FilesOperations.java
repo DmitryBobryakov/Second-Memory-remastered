@@ -10,6 +10,9 @@ import mipt.app.secondmemory.dto.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.FileInfoRequest;
 import mipt.app.secondmemory.dto.FileInfoResponse;
 import mipt.app.secondmemory.dto.RootDirectoriesRequest;
+import mipt.app.secondmemory.exception.DatabaseException;
+import mipt.app.secondmemory.exception.NoSuchBucketException;
+import mipt.app.secondmemory.exception.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.NoSuchFileException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,15 +26,15 @@ public interface FilesOperations {
   @ApiResponse(responseCode = "200", description = "Информация о файле получена")
   @GetMapping("/info/file/{fileId}")
   ResponseEntity<FileInfoResponse> getFileInfo(@Parameter(description = "ID файла") @PathVariable("fileId") long fileId, @Parameter(description = "ID пользователя") @RequestBody
-      FileInfoRequest fileInfoRequest) throws NoSuchFileException;
+      FileInfoRequest fileInfoRequest) throws NoSuchFileException, DatabaseException;
 
   @Operation(summary = "Получение информации о файлах в папке по пути до папки и названию бакета")
   @ApiResponse(responseCode = "200", description = "Информация о файлах в папке получена")
   @GetMapping("/info/directory")
-  ResponseEntity<Iterable<Result<Item>>> getFilesInDirectory(@Parameter(description = "ID пользователя, путь до папки и название бакета") @RequestBody DirectoryInfoRequest directoryInfoRequest);
+  ResponseEntity<Iterable<Result<Item>>> getFilesInDirectory(@Parameter(description = "ID пользователя, путь до папки и название бакета") @RequestBody DirectoryInfoRequest directoryInfoRequest) throws NoSuchDirectoryException;
 
   @Operation(summary = "Получение корневых папок бакета по его названию")
   @ApiResponse(responseCode = "200", description = "Корневые папки бакета получены")
   @GetMapping("/root/directories")
-  ResponseEntity<Iterable<Result<Item>>> getRootDirectories(@Parameter(description = "Название бакета и ID пользователя") @RequestBody RootDirectoriesRequest rootDirectoriesRequest);
+  ResponseEntity<Iterable<Result<Item>>> getRootDirectories(@Parameter(description = "Название бакета и ID пользователя") @RequestBody RootDirectoriesRequest rootDirectoriesRequest) throws NoSuchBucketException;
 }
