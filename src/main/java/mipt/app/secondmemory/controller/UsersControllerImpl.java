@@ -1,10 +1,13 @@
 package mipt.app.secondmemory.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mipt.app.secondmemory.dto.DtoMessage;
+import mipt.app.secondmemory.dto.MessageType;
 import mipt.app.secondmemory.dto.RequestUserDto;
 import mipt.app.secondmemory.dto.UserDto;
 import mipt.app.secondmemory.entity.Session;
@@ -14,6 +17,7 @@ import mipt.app.secondmemory.exception.SessionNotFoundException;
 import mipt.app.secondmemory.exception.UserNotFoundException;
 import mipt.app.secondmemory.repository.SessionsRepository;
 import mipt.app.secondmemory.repository.UsersRepository;
+import mipt.app.secondmemory.service.KafkaProducerService;
 import mipt.app.secondmemory.service.UsersService;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.http.ResponseEntity;
@@ -33,13 +37,14 @@ public class UsersControllerImpl implements UsersController {
   private final UsersRepository usersRepository;
   private final UsersService usersService;
   private final SessionsRepository sessionsRepository;
+  private final KafkaProducerService producerService;
   private final Instant date = Instant.now();
 
   @Override
   @PostMapping("/signin")
   public ResponseEntity<String> authenticateUser(
       RequestUserDto userDto, HttpServletResponse response)
-      throws UserNotFoundException, AuthenticationDataMismatchException {
+      throws UserNotFoundException, AuthenticationDataMismatchException, JsonProcessingException {
     log.info(
         "UsersController -> authenticate() -> Accepted request with email {}", userDto.getEmail());
     User user = usersService.authenticate(userDto);
@@ -67,18 +72,25 @@ public class UsersControllerImpl implements UsersController {
       sessionsRepository.save(new Session(cookie.getValue(), user));
     }
 
+    producerService.sendMessage(
+        new DtoMessage(user.getEmail(), user.getName(), MessageType.AUTHENTICATION));
+
     return ResponseEntity.ok("You have successfully logged in!");
   }
 
   @Override
   @PostMapping("/signup")
-  public ResponseEntity<UserDto> registerUser(User user) {
+  public ResponseEntity<UserDto> registerUser(User user) throws JsonProcessingException {
     log.info(
         "UsersController -> registerUser() -> Accepted request with email {}", user.getEmail());
     usersService.create(user);
     log.info(
         "UsersController -> registerUser() -> Successfully registered with email {}",
         user.getEmail());
+
+    producerService.sendMessage(
+        new DtoMessage(user.getEmail(), user.getName(), MessageType.REGISTRATION));
+
     return ResponseEntity.status(201).body(new UserDto(user.getEmail(), user.getName()));
   }
 
@@ -106,7 +118,7 @@ public class UsersControllerImpl implements UsersController {
   @DeleteMapping("/delete/{username}")
   public ResponseEntity<String> deleteUser(
       @PathVariable String username, String email, @CookieValue("data") String cookieValue)
-      throws UserNotFoundException {
+      throws UserNotFoundException, JsonProcessingException {
     log.info("UsersController -> deleteUser() -> Accepted request with email {}", email);
 
     User user = usersRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
@@ -118,6 +130,8 @@ public class UsersControllerImpl implements UsersController {
     }
 
     log.info("UsersController -> deleteUser() -> Successfully deleted user with email {}", email);
+
+    producerService.sendMessage(new DtoMessage(email, username, MessageType.DELETION));
 
     return ResponseEntity.ok("User " + email + " was successfully deleted");
   }

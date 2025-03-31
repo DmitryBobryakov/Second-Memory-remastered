@@ -1,9 +1,8 @@
 package mipt.app.secondmemory.dto;
 
+import java.time.Instant;
 import lombok.Data;
 import mipt.app.secondmemory.entity.File;
-
-import java.time.Instant;
 
 @Data
 public class FileDto {

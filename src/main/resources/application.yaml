@@ -16,6 +16,9 @@ spring:
   flyway:
     enabled: true
     validate-on-migrate: true
+  kafka:
+    bootstrap-servers: "localhost:29093"
+topic-to-send-message: user-topic
 management:
   endpoints:
     web:
