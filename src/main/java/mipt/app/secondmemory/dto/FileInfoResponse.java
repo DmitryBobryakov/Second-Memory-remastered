@@ -1,5 +1,7 @@
 package mipt.app.secondmemory.dto;
 
-public record FileInfoResponse(long fileId, String fileName, String fileOwnerId,
-                               String fileCreationDate, String fileLastModifiedDate,
-                               String fileAccessLevel, String fileTags) {}
+import java.sql.Timestamp;
+
+public record FileInfoResponse(long fileId, String fileName, long fileOwnerId,
+                               Timestamp fileCreationDate, Timestamp fileLastModifiedDate,
+                               long fileAccessLevelId) {}
