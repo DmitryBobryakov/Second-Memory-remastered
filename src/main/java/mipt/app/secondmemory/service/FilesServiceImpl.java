@@ -29,7 +29,7 @@ import java.security.NoSuchAlgorithmException;
 @Slf4j
 @RequiredArgsConstructor
 public class FilesServiceImpl {
-    private static final long CAPACITY = 1024 * 1024 * 10;
+    private static final long MAX_CAPACITY = 1024 * 1024 * 10;
     private final FilesS3RepositoryImpl filesS3Repository;
     private final FilesJpaRepository filesJpaRepository;
     private static final MinioClient client = MinioClientConfig.getClient();
@@ -52,7 +52,7 @@ public class FilesServiceImpl {
         if (!found) {
             client.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
         }
-        if (file.getSize() > CAPACITY) {
+        if (file.getSize() > MAX_CAPACITY) {
             throw new FileMemoryOverflowException();
         }
         filesS3Repository.upload(bucketName, file);
