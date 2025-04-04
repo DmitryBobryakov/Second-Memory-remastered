@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class DtoMessage {
+public class MessageDto {
   String email;
   String username;
   MessageType type;

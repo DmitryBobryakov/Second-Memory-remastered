@@ -3,7 +3,7 @@ package mipt.app.secondmemory.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.CompletableFuture;
-import mipt.app.secondmemory.dto.DtoMessage;
+import mipt.app.secondmemory.dto.MessageDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -24,8 +24,8 @@ public class KafkaProducerService {
     this.topic = topic;
   }
 
-  public void sendMessage(DtoMessage dtoMessage) throws JsonProcessingException {
-    String message = objectMapper.writeValueAsString(dtoMessage);
+  public void sendMessage(MessageDto messageDto) throws JsonProcessingException {
+    String message = objectMapper.writeValueAsString(messageDto);
 
     CompletableFuture<SendResult<String, String>> sendResult = kafkaTemplate.send(topic, message);
   }

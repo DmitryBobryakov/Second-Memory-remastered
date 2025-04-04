@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.dto.DtoMessage;
+import mipt.app.secondmemory.dto.MessageDto;
 import mipt.app.secondmemory.dto.MessageType;
 import mipt.app.secondmemory.dto.RequestUserDto;
 import mipt.app.secondmemory.dto.UserDto;
@@ -73,7 +73,7 @@ public class UsersControllerImpl implements UsersController {
     }
 
     producerService.sendMessage(
-        new DtoMessage(user.getEmail(), user.getName(), MessageType.AUTHENTICATION));
+        new MessageDto(user.getEmail(), user.getName(), MessageType.AUTHENTICATION));
 
     return ResponseEntity.ok("You have successfully logged in!");
   }
@@ -89,7 +89,7 @@ public class UsersControllerImpl implements UsersController {
         user.getEmail());
 
     producerService.sendMessage(
-        new DtoMessage(user.getEmail(), user.getName(), MessageType.REGISTRATION));
+        new MessageDto(user.getEmail(), user.getName(), MessageType.REGISTRATION));
 
     return ResponseEntity.status(201).body(new UserDto(user.getEmail(), user.getName()));
   }
@@ -131,7 +131,7 @@ public class UsersControllerImpl implements UsersController {
 
     log.info("UsersController -> deleteUser() -> Successfully deleted user with email {}", email);
 
-    producerService.sendMessage(new DtoMessage(email, username, MessageType.DELETION));
+    producerService.sendMessage(new MessageDto(email, username, MessageType.DELETION));
 
     return ResponseEntity.ok("User " + email + " was successfully deleted");
   }
