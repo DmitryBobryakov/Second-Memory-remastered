@@ -1,5 +1,6 @@
 package mipt.app.secondmemory.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,11 +23,27 @@ public class File {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @NotNull private String name;
-  @NotNull private Long ownerId;
-  @NotNull private Instant creationDate;
-  @NotNull private Instant lastModifiedDate;
-  @NotNull private String accessLevel;
+  @NotNull
+  @Column(name = "name")
+  private String name;
+
+  @NotNull
+  @Column(name = "owner_id")
+  private Long ownerId;
+
+  @NotNull
+  @Column(name = "creation_date")
+  private Instant creationDate;
+
+  @NotNull
+  @Column(name = "last_modified_date")
+  private Instant lastModifiedDate;
+
+  @NotNull
+  @Column(name = "access_level")
+  private String accessLevel;
+
+  @Column(name = "tags")
   private String tags;
 
   public File(

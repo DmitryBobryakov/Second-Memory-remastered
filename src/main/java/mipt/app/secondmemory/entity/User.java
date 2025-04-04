@@ -1,6 +1,7 @@
 package mipt.app.secondmemory.entity;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -26,12 +27,15 @@ public class User {
   private Long id;
 
   @Email(message = "Email should be valid")
+  @Column(name = "email")
   private String email;
 
   @NotNull(message = "Name should be filled")
+  @Column(name = "name")
   private String name;
 
   @NotNull(message = "Password should be filled")
+  @Column(name = "password")
   private String password;
 
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)

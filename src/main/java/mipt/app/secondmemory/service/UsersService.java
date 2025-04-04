@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class UsersService {
   private final UsersRepository usersRepository;
 
-  public void create(User newUser) {
+  public User create(User newUser) {
     log.info("UsersService -> create() -> Accepted request with email {}", newUser.getEmail());
     usersRepository
         .findByEmail(newUser.getEmail())
@@ -30,6 +30,7 @@ public class UsersService {
     usersRepository.save(newUser);
     log.info(
         "UsersService -> create() -> Successfully created user with email {}", newUser.getEmail());
+    return newUser;
   }
 
   public User authenticate(RequestUserDto user)
