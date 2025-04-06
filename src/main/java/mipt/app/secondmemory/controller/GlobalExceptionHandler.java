@@ -11,21 +11,23 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(FileNotFoundException.class)
-    public ResponseEntity<String> handleFileNotFound(FileNotFoundException exception) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-    }
+  @ExceptionHandler(FileNotFoundException.class)
+  public ResponseEntity<String> handleFileNotFound(FileNotFoundException exception) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+  }
 
-    @ExceptionHandler(FileMemoryOverflowException.class)
-    public ResponseEntity<String> handleFileMemoryOverflow(FileMemoryOverflowException exception) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
-    }
-    @ExceptionHandler(TagNotFoundException.class)
-    public ResponseEntity<String> handleTagMismatch(TagNotFoundException exception) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-    }
-    @ExceptionHandler(FileServerException.class)
-    public ResponseEntity<String> handleFileNotSuccessUpload(FileServerException exception) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
-    }
+  @ExceptionHandler(FileMemoryOverflowException.class)
+  public ResponseEntity<String> handleFileMemoryOverflow(FileMemoryOverflowException exception) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+  }
+
+  @ExceptionHandler(TagNotFoundException.class)
+  public ResponseEntity<String> handleTagMismatch(TagNotFoundException exception) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+  }
+
+  @ExceptionHandler(FileServerException.class)
+  public ResponseEntity<String> handleFileNotSuccessUpload(FileServerException exception) {
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+  }
 }

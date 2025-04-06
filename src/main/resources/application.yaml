@@ -24,3 +24,13 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     enabled: true
+
+mipt:
+  app:
+    servlet:
+      multipart:
+        max-capacity: 10485760
+    minio:
+      endpoint: http://localhost:9000
+      access-key: miniominio
+      secret-key: miniominio

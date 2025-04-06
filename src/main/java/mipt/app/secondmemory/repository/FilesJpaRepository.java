@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface FilesJpaRepository extends JpaRepository<File, Long> {
-    @Query("SELECT id FROM File")
-    List<Long> findAllId();
+  @Query("SELECT id FROM File")
+  List<Long> findAllId();
 }
