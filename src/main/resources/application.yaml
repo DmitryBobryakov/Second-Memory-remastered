@@ -55,3 +55,6 @@ mipt:
       endpoint: http://localhost:9000
       access-key: miniominio
       secret-key: miniominio
+    caffeine_cache:
+      expiration_time: 120
+      max_weight: 2048
