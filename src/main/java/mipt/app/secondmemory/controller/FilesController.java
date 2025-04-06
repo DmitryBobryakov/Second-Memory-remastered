@@ -18,6 +18,7 @@ import org.springframework.stereotype.Controller;
 @Controller
 @RequiredArgsConstructor
 public class FilesController implements FilesOperations {
+
   private final FilesService filesService;
 
   @Override
@@ -27,12 +28,14 @@ public class FilesController implements FilesOperations {
   }
 
   @Override
-  public ResponseEntity<Iterable<Result<Item>>> getFilesInDirectory(DirectoryInfoRequest directoryInfoRequest) throws NoSuchDirectoryException {
+  public ResponseEntity<Iterable<Result<Item>>> getFilesInDirectory(
+      DirectoryInfoRequest directoryInfoRequest) throws NoSuchDirectoryException {
     return ResponseEntity.ok(filesService.getFilesInDirectory(directoryInfoRequest));
   }
 
   @Override
-  public ResponseEntity<Iterable<Result<Item>>> getRootDirectories(RootDirectoriesRequest rootDirectoriesRequest) throws NoSuchBucketException {
+  public ResponseEntity<Iterable<Result<Item>>> getRootDirectories(
+      RootDirectoriesRequest rootDirectoriesRequest) throws NoSuchBucketException {
     return ResponseEntity.ok(filesService.getRootDirectories(rootDirectoriesRequest));
   }
 }

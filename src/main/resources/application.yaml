@@ -14,3 +14,9 @@ spring:
         format_sql: true
     hibernate:
       ddl-auto: validate
+
+mipt:
+  app:
+    caffeine_cache:
+      expiration_time: 120
+      max_weight: 2048

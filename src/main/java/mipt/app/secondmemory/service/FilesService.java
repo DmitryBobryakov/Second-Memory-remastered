@@ -23,32 +23,43 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class FilesService {
+
   private final FilesRepository filesRepository;
   private final DirectoriesRepository directoriesRepository;
 
   @Cacheable(cacheNames = {"receivedFileInfo"}, key = "{#fileId}")
-  public FileInfoResponse getFileInfo(long fileId, FileInfoRequest fileInfoRequest) throws NoSuchFileException, DatabaseException {
+  public FileInfoResponse getFileInfo(long fileId, FileInfoRequest fileInfoRequest)
+      throws NoSuchFileException, DatabaseException {
     log.info("File ID: {}, User ID: {}", fileId, fileInfoRequest.userId());
 
     Optional<FileEntity> result = filesRepository.findById(fileId);
     if (result.isPresent()) {
       FileEntity file = result.get();
-      return new FileInfoResponse(file.getId(), file.getName(), file.getOwnerId(), file.getCreationDate(), file.getLastModifiedDate(), file.getAccessLevelId());
+      return new FileInfoResponse(file.getId(), file.getName(), file.getCapacity(),
+          file.getOwnerId(), file.getCreationDate(), file.getLastModifiedDate(),
+          file.getBucketId());
     } else {
       throw new DatabaseException("Cannot select file data from DB");
     }
   }
 
-  @Cacheable(cacheNames = {"receivedFilesInDirectory"}, key = "{#directoryInfoRequest.pathToDirectory()}")
-  public Iterable<Result<Item>> getFilesInDirectory(DirectoryInfoRequest directoryInfoRequest) throws NoSuchDirectoryException {
-    log.info("Bucket name: {}, Path to directory: {}, User ID: {}", directoryInfoRequest.bucketName(), directoryInfoRequest.pathToDirectory(), directoryInfoRequest.userId());
+  @Cacheable(cacheNames = {
+      "receivedFilesInDirectory"}, key = "{#directoryInfoRequest.pathToDirectory()}")
+  public Iterable<Result<Item>> getFilesInDirectory(DirectoryInfoRequest directoryInfoRequest)
+      throws NoSuchDirectoryException {
+    log.info("Bucket name: {}, Path to directory: {}, User ID: {}",
+        directoryInfoRequest.bucketName(), directoryInfoRequest.pathToDirectory(),
+        directoryInfoRequest.userId());
 
     return directoriesRepository.getFilesInDirectory(directoryInfoRequest);
   }
 
-  @Cacheable(cacheNames = {"receivedRootDirectories"}, key = "{#rootDirectoriesRequest.bucketName()}")
-  public Iterable<Result<Item>> getRootDirectories(RootDirectoriesRequest rootDirectoriesRequest) throws NoSuchBucketException {
-    log.info("Bucket name: {}, User ID: {}", rootDirectoriesRequest.bucketName(), rootDirectoriesRequest.userId());
+  @Cacheable(cacheNames = {
+      "receivedRootDirectories"}, key = "{#rootDirectoriesRequest.bucketName()}")
+  public Iterable<Result<Item>> getRootDirectories(RootDirectoriesRequest rootDirectoriesRequest)
+      throws NoSuchBucketException {
+    log.info("Bucket name: {}, User ID: {}", rootDirectoriesRequest.bucketName(),
+        rootDirectoriesRequest.userId());
 
     return directoriesRepository.getRootDirectories(rootDirectoriesRequest);
   }

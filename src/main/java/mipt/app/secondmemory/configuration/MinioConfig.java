@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 public class MinioConfig {
+
   private static final String accessKey = "miniominio";
   private static final String secretKey = "miniominio";
   private final MinioClient minioClient =

@@ -2,6 +2,6 @@ package mipt.app.secondmemory.dto;
 
 import java.sql.Timestamp;
 
-public record FileInfoResponse(long fileId, String fileName, long fileOwnerId,
+public record FileInfoResponse(Long fileId, String fileName, long fileCapacity, Long fileOwnerId,
                                Timestamp fileCreationDate, Timestamp fileLastModifiedDate,
-                               long fileAccessLevelId) {}
+                               Long bucketId) {}
