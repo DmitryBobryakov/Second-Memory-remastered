@@ -26,7 +26,7 @@ import java.util.Objects;
 @Setter
 @Table(name = "files_info")
 @Schema(name = "File", description = "Сущность Файла")
-public class File {
+public class FileEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -70,8 +70,8 @@ public class File {
             ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
             : this.getClass();
     if (thisEffectiveClass != oEffectiveClass) return false;
-    File file = (File) o;
-    return getId() != null && Objects.equals(getId(), file.getId());
+    FileEntity fileEntity = (FileEntity) o;
+    return getId() != null && Objects.equals(getId(), fileEntity.getId());
   }
 
   @Override

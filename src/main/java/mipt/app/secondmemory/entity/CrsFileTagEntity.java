@@ -16,7 +16,7 @@ import java.util.Objects;
 @IdClass(FileTagId.class)
 @Getter
 @Setter
-public class CrsFileTag {
+public class CrsFileTagEntity {
   @Id private Long fileId;
 
   @Id private Long tagId;
@@ -34,7 +34,7 @@ public class CrsFileTag {
             ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
             : this.getClass();
     if (thisEffectiveClass != oEffectiveClass) return false;
-    CrsFileTag that = (CrsFileTag) o;
+    CrsFileTagEntity that = (CrsFileTagEntity) o;
     return getFileId() != null
         && Objects.equals(getFileId(), that.getFileId())
         && getTagId() != null

@@ -3,7 +3,7 @@ package mipt.app.secondmemory.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.TagDto;
-import mipt.app.secondmemory.entity.Tag;
+import mipt.app.secondmemory.entity.TagEntity;
 import mipt.app.secondmemory.exception.TagNotFoundException;
 import mipt.app.secondmemory.mapper.TagMapper;
 import mipt.app.secondmemory.repository.TagsJpaRepository;
@@ -21,31 +21,31 @@ public class TagsService {
 
   public TagDto get(Long tagId) throws TagNotFoundException {
     log.info("Функция по взятию тега вызвана в сервисе");
-    Tag tag = tagsRepository.findById(tagId).orElseThrow(TagNotFoundException::new);
-    return tagMapper.toDto(tag);
+    TagEntity tagEntity = tagsRepository.findById(tagId).orElseThrow(TagNotFoundException::new);
+    return tagMapper.toDto(tagEntity);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public TagDto create(Tag tag) {
+  public TagDto create(TagEntity tagEntity) {
     log.info("Функция по созданию тега вызвана в сервисе");
-    tagsRepository.save(tag);
-    return tagMapper.toDto(tag);
+    tagsRepository.save(tagEntity);
+    return tagMapper.toDto(tagEntity);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
-  public TagDto replace(Long tagId, Tag newTag) throws TagNotFoundException {
+  public TagDto replace(Long tagId, TagEntity newTagEntity) throws TagNotFoundException {
     log.info("Функция по замене тега вызвана в сервисе");
-    Tag tag = tagsRepository.findById(tagId).orElseThrow(TagNotFoundException::new);
-    tag.setName(newTag.getName());
-    tagsRepository.save(tag);
-    return tagMapper.toDto(tag);
+    TagEntity tagEntity = tagsRepository.findById(tagId).orElseThrow(TagNotFoundException::new);
+    tagEntity.setName(newTagEntity.getName());
+    tagsRepository.save(tagEntity);
+    return tagMapper.toDto(tagEntity);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
   public TagDto delete(Long tagId) throws TagNotFoundException {
     log.info("Функция по удалению тега вызвана в сервисе");
-    Tag tag = tagsRepository.findById(tagId).orElseThrow(TagNotFoundException::new);
+    TagEntity tagEntity = tagsRepository.findById(tagId).orElseThrow(TagNotFoundException::new);
     tagsRepository.deleteById(tagId);
-    return tagMapper.toDto(tag);
+    return tagMapper.toDto(tagEntity);
   }
 }

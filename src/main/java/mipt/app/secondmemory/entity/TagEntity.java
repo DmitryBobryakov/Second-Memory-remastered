@@ -25,7 +25,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Tag {
+public class TagEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -48,8 +48,8 @@ public class Tag {
             ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
             : this.getClass();
     if (thisEffectiveClass != oEffectiveClass) return false;
-    Tag tag = (Tag) o;
-    return getId() != null && Objects.equals(getId(), tag.getId());
+    TagEntity tagEntity = (TagEntity) o;
+    return getId() != null && Objects.equals(getId(), tagEntity.getId());
   }
 
   @Override

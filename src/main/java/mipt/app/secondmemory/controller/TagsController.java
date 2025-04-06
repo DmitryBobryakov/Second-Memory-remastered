@@ -1,7 +1,7 @@
 package mipt.app.secondmemory.controller;
 
 import mipt.app.secondmemory.dto.TagDto;
-import mipt.app.secondmemory.entity.Tag;
+import mipt.app.secondmemory.entity.TagEntity;
 import mipt.app.secondmemory.exception.TagNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,9 +23,10 @@ public interface TagsController {
       throws TagNotFoundException;
 
   @PutMapping("/tags/put/{tagId}")
-  ResponseEntity<TagDto> rename(@PathVariable(name = "tagId") Long tagId, @RequestBody Tag newTag)
+  ResponseEntity<TagDto> rename(
+      @PathVariable(name = "tagId") Long tagId, @RequestBody TagEntity newTagEntity)
       throws TagNotFoundException;
 
   @PostMapping("/tags/create")
-  ResponseEntity<TagDto> create(@RequestBody Tag tag);
+  ResponseEntity<TagDto> create(@RequestBody TagEntity tagEntity);
 }
