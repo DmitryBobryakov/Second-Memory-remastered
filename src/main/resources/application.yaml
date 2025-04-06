@@ -1,10 +1,15 @@
 spring:
   application:
     name: secondMemory
+  servlet:
+    multipart:
+      max-request-size: 10MB
+      max-file-size: 1MB
   datasource:
     url: "jdbc:postgresql://localhost:5435/postgres"
     username: postgres
     password: changeme
+    driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true
     properties:
@@ -19,6 +24,7 @@ spring:
   kafka:
     bootstrap-servers: "localhost:29093"
 topic-to-send-message: events-topic
+
 management:
   endpoints:
     web:
@@ -29,6 +35,7 @@ management:
   info:
     env:
       enabled: true
+
 info:
   app:
     name: "Second Memory"
@@ -38,3 +45,13 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
+
+mipt:
+  app:
+    servlet:
+      multipart:
+        max-capacity: 10485760
+    minio:
+      endpoint: http://localhost:9000
+      access-key: miniominio
+      secret-key: miniominio
