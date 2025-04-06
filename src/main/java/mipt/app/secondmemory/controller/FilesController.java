@@ -5,9 +5,9 @@ import io.minio.messages.Item;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mipt.app.secondmemory.dto.DirectoryInfoRequest;
+import mipt.app.secondmemory.dto.FileDto;
 import mipt.app.secondmemory.dto.FileInfoRequest;
 import mipt.app.secondmemory.dto.FileInfoResponse;
-import mipt.app.secondmemory.dto.FileDto;
 import mipt.app.secondmemory.dto.RootDirectoriesRequest;
 import mipt.app.secondmemory.exception.DatabaseException;
 import mipt.app.secondmemory.exception.NoSuchBucketException;
@@ -27,10 +27,10 @@ public class FilesController implements FilesOperations {
 
   private final FilesService filesService;
 
-  @PostMapping("/file-search")
-  public ResponseEntity<List<FileDto>> searchFilesInDirectory(@RequestBody String name) {
-    return ResponseEntity.ok().body(filesService.searchFiles("%" + name + "%"));
-  }
+//  @PostMapping("/file-search")
+//  public ResponseEntity<List<FileDto>> searchFilesInDirectory(@RequestBody String name) {
+//    return ResponseEntity.ok().body(filesService.searchFiles("%" + name + "%"));
+//  }
 
   @Override
   public ResponseEntity<FileInfoResponse> getFileInfo(long fileId, FileInfoRequest fileInfoRequest)

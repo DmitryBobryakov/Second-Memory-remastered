@@ -4,12 +4,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import mipt.app.secondmemory.entity.id.FileTagId;
 import org.hibernate.proxy.HibernateProxy;
-
-import java.util.Objects;
 
 @Table(name = "files_tags")
 @Entity

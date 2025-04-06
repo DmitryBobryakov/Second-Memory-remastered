@@ -1,16 +1,16 @@
 package mipt.app.secondmemory.controller;
 
 import mipt.app.secondmemory.exception.AuthenticationDataMismatchException;
-import mipt.app.secondmemory.exception.UserAlreadyExistsException;
-import mipt.app.secondmemory.exception.UserNotFoundException;
+import mipt.app.secondmemory.exception.DatabaseException;
 import mipt.app.secondmemory.exception.FileMemoryOverflowException;
 import mipt.app.secondmemory.exception.FileNotFoundException;
 import mipt.app.secondmemory.exception.FileServerException;
-import mipt.app.secondmemory.exception.TagNotFoundException;
-import mipt.app.secondmemory.exception.DatabaseException;
 import mipt.app.secondmemory.exception.NoSuchBucketException;
 import mipt.app.secondmemory.exception.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.NoSuchFileException;
+import mipt.app.secondmemory.exception.TagNotFoundException;
+import mipt.app.secondmemory.exception.UserAlreadyExistsException;
+import mipt.app.secondmemory.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

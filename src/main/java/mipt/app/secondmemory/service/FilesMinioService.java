@@ -9,11 +9,14 @@ import io.minio.errors.InternalException;
 import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.configuration.MinioClientConfig;
 import mipt.app.secondmemory.exception.FileMemoryOverflowException;
-import mipt.app.secondmemory.repository.FilesJpaRepository;
 import mipt.app.secondmemory.repository.FilesS3RepositoryImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -24,11 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -38,7 +36,6 @@ public class FilesMinioService {
   private long maxFileSize;
 
   private final FilesS3RepositoryImpl filesS3Repository;
-  private final FilesJpaRepository filesJpaRepository;
   private static final MinioClient client = MinioClientConfig.getClient();
 
   public ModelAndView download(String bucketName, String key)

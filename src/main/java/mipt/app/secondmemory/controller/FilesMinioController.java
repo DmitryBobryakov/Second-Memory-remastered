@@ -7,6 +7,9 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import mipt.app.secondmemory.exception.FileMemoryOverflowException;
 import mipt.app.secondmemory.exception.FileServerException;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 @RequestMapping("/second-memory")
 @Tag(name = "File API", description = "Управление файлами")

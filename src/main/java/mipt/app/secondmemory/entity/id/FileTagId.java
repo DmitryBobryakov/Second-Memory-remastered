@@ -1,8 +1,8 @@
 package mipt.app.secondmemory.entity.id;
 
+import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
-import java.io.Serializable;
 
 @Getter
 @Setter

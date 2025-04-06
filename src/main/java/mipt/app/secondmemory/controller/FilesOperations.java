@@ -27,20 +27,22 @@ public interface FilesOperations {
   @GetMapping("/info/file/{fileId}")
   ResponseEntity<FileInfoResponse> getFileInfo(
       @Parameter(description = "ID файла") @PathVariable("fileId") long fileId,
-      @Parameter(description = "ID пользователя") @RequestBody
-      FileInfoRequest fileInfoRequest) throws NoSuchFileException, DatabaseException;
+      @Parameter(description = "ID пользователя") @RequestBody FileInfoRequest fileInfoRequest)
+      throws NoSuchFileException, DatabaseException;
 
   @Operation(summary = "Получение информации о файлах в папке по пути до папки и названию бакета")
   @ApiResponse(responseCode = "200", description = "Информация о файлах в папке получена")
   @GetMapping("/info/directory")
   ResponseEntity<Iterable<Result<Item>>> getFilesInDirectory(
-      @Parameter(description = "ID пользователя, путь до папки и название бакета") @RequestBody DirectoryInfoRequest directoryInfoRequest)
+      @Parameter(description = "ID пользователя, путь до папки и название бакета") @RequestBody
+          DirectoryInfoRequest directoryInfoRequest)
       throws NoSuchDirectoryException;
 
   @Operation(summary = "Получение корневых папок бакета по его названию")
   @ApiResponse(responseCode = "200", description = "Корневые папки бакета получены")
   @GetMapping("/root/directories")
   ResponseEntity<Iterable<Result<Item>>> getRootDirectories(
-      @Parameter(description = "Название бакета и ID пользователя") @RequestBody RootDirectoriesRequest rootDirectoriesRequest)
+      @Parameter(description = "Название бакета и ID пользователя") @RequestBody
+          RootDirectoriesRequest rootDirectoriesRequest)
       throws NoSuchBucketException;
 }

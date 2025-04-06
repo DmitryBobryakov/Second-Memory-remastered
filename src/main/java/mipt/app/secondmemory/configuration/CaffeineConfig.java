@@ -24,7 +24,8 @@ public class CaffeineConfig {
 
   @Bean
   public Caffeine createCaffeineCache() {
-    return Caffeine.newBuilder().expireAfterWrite(EXPIRATION_TIME, TimeUnit.MINUTES)
+    return Caffeine.newBuilder()
+        .expireAfterWrite(EXPIRATION_TIME, TimeUnit.MINUTES)
         .maximumWeight(MAX_WEIGHT);
   }
 }

@@ -12,5 +12,4 @@ public interface FilesRepository extends JpaRepository<FileEntity, Long> {
   List<FileEntity> findByNameLike(String name);
 
   Optional<FileEntity> findById(long fileId);
-
 }
