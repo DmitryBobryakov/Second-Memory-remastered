@@ -1,3 +1,40 @@
 spring:
   application:
     name: secondMemory
+  datasource:
+    url: "jdbc:postgresql://localhost:5435/postgres"
+    username: postgres
+    password: changeme
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    validate-on-migrate: true
+  kafka:
+    bootstrap-servers: "localhost:29093"
+topic-to-send-message: events-topic
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+        exclude: shutdown
+      base-path: "/admin/actuator"
+  info:
+    env:
+      enabled: true
+info:
+  app:
+    name: "Second Memory"
+    description: "This is a file sharing service"
+    version: "0.0.1"
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
