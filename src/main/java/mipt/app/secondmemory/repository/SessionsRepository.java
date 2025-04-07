@@ -1,4 +1,4 @@
-package mipt.app.secondmemory.repository.session;
+package mipt.app.secondmemory.repository;
 
 import java.util.Optional;
 import mipt.app.secondmemory.entity.Session;

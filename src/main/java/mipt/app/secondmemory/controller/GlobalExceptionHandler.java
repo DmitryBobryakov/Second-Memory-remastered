@@ -7,7 +7,6 @@ import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.exception.file.FileServerException;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
-import mipt.app.secondmemory.exception.file.NoSuchFileException;
 import mipt.app.secondmemory.exception.tag.TagNotFoundException;
 import mipt.app.secondmemory.exception.user.UserAlreadyExistsException;
 import mipt.app.secondmemory.exception.user.UserNotFoundException;
@@ -33,11 +32,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
   }
 
-  @ExceptionHandler(FileNotFoundException.class)
-  public ResponseEntity<String> handleFileNotFound(FileNotFoundException exception) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-  }
-
   @ExceptionHandler(FileMemoryOverflowException.class)
   public ResponseEntity<String> handleFileMemoryOverflow(FileMemoryOverflowException exception) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
@@ -53,8 +47,8 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
   }
 
-  @ExceptionHandler(NoSuchFileException.class)
-  public ResponseEntity<String> handleNoSuchFileException(NoSuchFileException exception) {
+  @ExceptionHandler(FileNotFoundException.class)
+  public ResponseEntity<String> handleFileNotFound(FileNotFoundException exception) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
   }
 

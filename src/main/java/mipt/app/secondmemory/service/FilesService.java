@@ -1,24 +1,42 @@
-package mipt.app.secondmemory.service.file;
+package mipt.app.secondmemory.service;
 
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
+import io.minio.Result;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
 import io.minio.errors.InternalException;
 import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.configuration.MinioClientConfig;
+import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
+import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
+import mipt.app.secondmemory.dto.file.FileInfoRequest;
+import mipt.app.secondmemory.dto.file.FileInfoResponse;
+import mipt.app.secondmemory.entity.FileEntity;
+import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
+import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
+import mipt.app.secondmemory.exception.file.DatabaseException;
 import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
-import mipt.app.secondmemory.repository.file.FilesS3RepositoryImpl;
+import mipt.app.secondmemory.exception.file.FileNotFoundException;
+import mipt.app.secondmemory.mapper.FileMapper;
+import mipt.app.secondmemory.repository.DirectoriesRepository;
+import mipt.app.secondmemory.repository.FilesRepository;
+import mipt.app.secondmemory.repository.FilesS3RepositoryImpl;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -31,12 +49,16 @@ import org.springframework.web.servlet.ModelAndView;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class FilesMinioService {
+public class FilesService {
   @Value("${mipt.app.servlet.multipart.max-capacity}")
   private long maxFileSize;
 
   private final FilesS3RepositoryImpl filesS3Repository;
   private static final MinioClient client = MinioClientConfig.getClient();
+
+  private final FileMapper fileMapper;
+  private final FilesRepository filesRepository;
+  private final DirectoriesRepository directoriesRepository;
 
   public ModelAndView download(String bucketName, String key)
       throws ServerException,
@@ -47,7 +69,8 @@ public class FilesMinioService {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException {
+          InternalException,
+          FileNotFoundException {
     log.info("Функция по скачиванию файла вызвана в сервисе");
     boolean found = client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
     if (!found) {
@@ -89,7 +112,8 @@ public class FilesMinioService {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException {
+          InternalException,
+          FileNotFoundException {
     log.info("Функция по переименованию файла вызвана в сервисе");
     if (oldKey.equals(newKey)) {
       return;
@@ -111,7 +135,8 @@ public class FilesMinioService {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException {
+          InternalException,
+          FileNotFoundException {
     log.info("Функция по удалению файла вызвана в сервисе");
     boolean found = client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
     if (!found) {
@@ -129,7 +154,8 @@ public class FilesMinioService {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException {
+          InternalException,
+          FileNotFoundException {
     log.info("Функция по перемещению файла внутри бакета вызвана в репозитории");
     boolean found = client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
     if (!found) {
@@ -147,7 +173,8 @@ public class FilesMinioService {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException {
+          InternalException,
+          FileNotFoundException {
     log.info("Функция по перемещению файла через бакеты вызвана в репозитории");
     boolean foundInOldBucket =
         client.bucketExists(BucketExistsArgs.builder().bucket(oldBucketName).build());
@@ -157,5 +184,64 @@ public class FilesMinioService {
       throw new FileNotFoundException();
     }
     filesS3Repository.moveBetweenBuckets(oldBucketName, newBucketName, key);
+  }
+
+  @Cacheable(
+      cacheNames = {"receivedFileInfo"},
+      key = "{#fileId}")
+  public FileInfoResponse getFileInfo(long fileId, FileInfoRequest fileInfoRequest)
+      throws FileNotFoundException, DatabaseException {
+    log.info("File ID: {}, User ID: {}", fileId, fileInfoRequest.userId());
+
+    Optional<FileEntity> result = filesRepository.findById(fileId);
+    if (result.isPresent()) {
+      FileEntity file = result.get();
+      return new FileInfoResponse(
+          file.getId(),
+          file.getName(),
+          file.getCapacity(),
+          file.getOwnerId(),
+          file.getCreationDate(),
+          file.getLastModifiedDate(),
+          file.getBucketId());
+    } else {
+      throw new DatabaseException("Cannot select file data from DB");
+    }
+  }
+
+  public List<FileInfoResponse> searchFiles(String name) {
+    List<FileEntity> files = filesRepository.findByNameLike(name);
+    List<FileInfoResponse> resultFiles = new ArrayList<>();
+    for (FileEntity file : files) {
+      resultFiles.add(fileMapper.toDto(file));
+    }
+    return resultFiles;
+  }
+
+  @Cacheable(
+      cacheNames = {"receivedFilesInDirectory"},
+      key = "{#directoryInfoRequest.pathToDirectory()}")
+  public Iterable<Result<Item>> getFilesInDirectory(DirectoryInfoRequest directoryInfoRequest)
+      throws NoSuchDirectoryException {
+    log.info(
+        "Bucket name: {}, Path to directory: {}, User ID: {}",
+        directoryInfoRequest.bucketName(),
+        directoryInfoRequest.pathToDirectory(),
+        directoryInfoRequest.userId());
+
+    return directoriesRepository.getFilesInDirectory(directoryInfoRequest);
+  }
+
+  @Cacheable(
+      cacheNames = {"receivedRootDirectories"},
+      key = "{#rootDirectoriesRequest.bucketName()}")
+  public Iterable<Result<Item>> getRootDirectories(RootDirectoriesRequest rootDirectoriesRequest)
+      throws NoSuchBucketException {
+    log.info(
+        "Bucket name: {}, User ID: {}",
+        rootDirectoriesRequest.bucketName(),
+        rootDirectoriesRequest.userId());
+
+    return directoriesRepository.getRootDirectories(rootDirectoriesRequest);
   }
 }

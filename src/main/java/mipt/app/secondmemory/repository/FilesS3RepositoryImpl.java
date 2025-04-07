@@ -1,4 +1,4 @@
-package mipt.app.secondmemory.repository.file;
+package mipt.app.secondmemory.repository;
 
 import io.minio.CopyObjectArgs;
 import io.minio.CopySource;

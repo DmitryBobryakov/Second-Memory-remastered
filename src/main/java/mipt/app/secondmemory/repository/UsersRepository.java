@@ -1,4 +1,4 @@
-package mipt.app.secondmemory.repository.user;
+package mipt.app.secondmemory.repository;
 
 import java.util.Optional;
 import mipt.app.secondmemory.entity.User;

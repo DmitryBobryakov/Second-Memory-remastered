@@ -1,4 +1,4 @@
-package mipt.app.secondmemory.service.tag;
+package mipt.app.secondmemory.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,7 +6,7 @@ import mipt.app.secondmemory.dto.tag.TagDto;
 import mipt.app.secondmemory.entity.TagEntity;
 import mipt.app.secondmemory.exception.tag.TagNotFoundException;
 import mipt.app.secondmemory.mapper.TagMapper;
-import mipt.app.secondmemory.repository.tag.TagsJpaRepository;
+import mipt.app.secondmemory.repository.TagsJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;

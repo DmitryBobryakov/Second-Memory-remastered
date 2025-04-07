@@ -1,4 +1,4 @@
-package mipt.app.secondmemory.repository.directory;
+package mipt.app.secondmemory.repository;
 
 import io.minio.ListObjectsArgs;
 import io.minio.MinioClient;

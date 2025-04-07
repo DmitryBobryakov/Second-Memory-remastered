@@ -1,4 +1,4 @@
-package mipt.app.secondmemory.repository.tag;
+package mipt.app.secondmemory.repository;
 
 import mipt.app.secondmemory.entity.TagEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

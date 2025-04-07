@@ -15,24 +15,17 @@ import mipt.app.secondmemory.entity.User;
 import mipt.app.secondmemory.exception.user.AuthenticationDataMismatchException;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
 import mipt.app.secondmemory.exception.user.UserNotFoundException;
-import mipt.app.secondmemory.repository.session.SessionsRepository;
-import mipt.app.secondmemory.repository.user.UsersRepository;
-import mipt.app.secondmemory.service.kafka.KafkaProducerService;
-import mipt.app.secondmemory.service.user.UsersService;
+import mipt.app.secondmemory.repository.SessionsRepository;
+import mipt.app.secondmemory.repository.UsersRepository;
+import mipt.app.secondmemory.service.KafkaProducerService;
+import mipt.app.secondmemory.service.UsersService;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/second-memory")
 public class UsersControllerImpl implements UsersController {
   private final UsersRepository usersRepository;
   private final UsersService usersService;
@@ -41,7 +34,6 @@ public class UsersControllerImpl implements UsersController {
   private final Instant date = Instant.now();
 
   @Override
-  @PostMapping("/signin")
   public ResponseEntity<String> authenticateUser(
       RequestUserDto userDto, HttpServletResponse response)
       throws UserNotFoundException, AuthenticationDataMismatchException, JsonProcessingException {
@@ -79,7 +71,6 @@ public class UsersControllerImpl implements UsersController {
   }
 
   @Override
-  @PostMapping("/signup")
   public ResponseEntity<UserDto> registerUser(User user) throws JsonProcessingException {
     log.info(
         "UsersController -> registerUser() -> Accepted request with email {}", user.getEmail());
@@ -90,13 +81,11 @@ public class UsersControllerImpl implements UsersController {
 
     producerService.sendMessage(
         new MessageDto(user.getEmail(), user.getName(), MessageType.REGISTRATION));
-
     return ResponseEntity.status(201).body(new UserDto(user.getEmail(), user.getName()));
   }
 
   @Override
-  @PatchMapping("/update")
-  public ResponseEntity<String> updateUser(User user, @CookieValue("data") String cookieValue)
+  public ResponseEntity<String> updateUser(User user, String cookieValue)
       throws UserNotFoundException {
     log.info("UsersController -> updateUser() -> Accepted request with email {}", user.getEmail());
 
@@ -115,9 +104,7 @@ public class UsersControllerImpl implements UsersController {
   }
 
   @Override
-  @DeleteMapping("/delete/{username}")
-  public ResponseEntity<String> deleteUser(
-      @PathVariable String username, String email, @CookieValue("data") String cookieValue)
+  public ResponseEntity<String> deleteUser(String username, String email, String cookieValue)
       throws UserNotFoundException, JsonProcessingException {
     log.info("UsersController -> deleteUser() -> Accepted request with email {}", email);
 
@@ -137,7 +124,6 @@ public class UsersControllerImpl implements UsersController {
   }
 
   @Override
-  @PostMapping("/logout")
   public ResponseEntity<String> logOut(String requestUuid, HttpServletResponse response)
       throws UserNotFoundException {
     log.info("UsersController -> logOut() -> Accepted request user with uuid {}", requestUuid);

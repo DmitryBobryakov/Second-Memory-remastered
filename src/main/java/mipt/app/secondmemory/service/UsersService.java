@@ -1,4 +1,4 @@
-package mipt.app.secondmemory.service.user;
+package mipt.app.secondmemory.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,7 +7,7 @@ import mipt.app.secondmemory.entity.User;
 import mipt.app.secondmemory.exception.user.AuthenticationDataMismatchException;
 import mipt.app.secondmemory.exception.user.UserAlreadyExistsException;
 import mipt.app.secondmemory.exception.user.UserNotFoundException;
-import mipt.app.secondmemory.repository.user.UsersRepository;
+import mipt.app.secondmemory.repository.UsersRepository;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 

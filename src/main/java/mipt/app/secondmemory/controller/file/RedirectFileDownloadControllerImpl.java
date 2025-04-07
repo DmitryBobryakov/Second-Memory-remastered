@@ -3,7 +3,7 @@ package mipt.app.secondmemory.controller.file;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.service.file.FilesMinioService;
+import mipt.app.secondmemory.service.FilesService;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerMapping;
@@ -13,7 +13,7 @@ import org.springframework.web.servlet.ModelAndView;
 @Slf4j
 @RequiredArgsConstructor
 public class RedirectFileDownloadControllerImpl implements RedirectFileDownloadController {
-  private final FilesMinioService filesService;
+  private final FilesService filesService;
 
   public ModelAndView download(String bucketName, HttpServletRequest request) throws Exception {
     String key =

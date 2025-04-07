@@ -1,4 +1,4 @@
-package mipt.app.secondmemory.service.kafka;
+package mipt.app.secondmemory.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -15,11 +15,3 @@ public class FileMapper {
         .build();
   }
 }
-//  public FileEntity toFile(FileInfoResponse fileDto) {
-//    return FileEntity.builder()
-//        .id(fileDto.fileId())
-//        .name(fileDto.fileName())
-//        .capacity(fileDto.fileCapacity())
-//        .build();
-//  }
-

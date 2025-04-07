@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.tag.TagDto;
 import mipt.app.secondmemory.entity.TagEntity;
 import mipt.app.secondmemory.exception.tag.TagNotFoundException;
-import mipt.app.secondmemory.service.tag.TagsService;
+import mipt.app.secondmemory.service.TagsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
