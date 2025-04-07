@@ -1,23 +1,25 @@
 package mipt.app.secondmemory.mapper;
 
-import mipt.app.secondmemory.dto.FileMinioDto;
+import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.entity.FileEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FileMapper {
-  public FileMinioDto toDto(FileEntity fileEntity) {
-    String name = fileEntity.getName();
-    Long id = fileEntity.getId();
-    long capacity = fileEntity.getCapacity();
-    return new FileMinioDto(id, name, capacity);
-  }
-
-  public FileEntity toFile(FileMinioDto fIleMinioDto) {
-    return FileEntity.builder()
-        .id(fIleMinioDto.id())
-        .name(fIleMinioDto.name())
-        .capacity(fIleMinioDto.capacity())
+  public FileInfoResponse toDto(FileEntity fileEntity) {
+    return FileInfoResponse.builder()
+        .fileCapacity(fileEntity.getCapacity())
+        .fileName(fileEntity.getName())
+        .fileLastModifiedDate(fileEntity.getLastModifiedDate())
+        .fileCreationDate(fileEntity.getCreationDate())
         .build();
   }
 }
+//  public FileEntity toFile(FileInfoResponse fileDto) {
+//    return FileEntity.builder()
+//        .id(fileDto.fileId())
+//        .name(fileDto.fileName())
+//        .capacity(fileDto.fileCapacity())
+//        .build();
+//  }
+
