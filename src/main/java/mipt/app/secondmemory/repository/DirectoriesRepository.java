@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class DirectoriesRepository {
 
-  private static final MinioClient minioConfig = MinioClientConfig.getClient();
+  private static final MinioClient minioConfig = MinioClientConfig.createMinioClient();
 
   public Iterable<Result<Item>> getFilesInDirectory(DirectoryInfoRequest directoryInfoRequest) {
     return minioConfig.listObjects(

@@ -54,7 +54,7 @@ public class FilesService {
   private long maxFileSize;
 
   private final FilesS3RepositoryImpl filesS3Repository;
-  private static final MinioClient client = MinioClientConfig.getClient();
+  private static final MinioClient client = MinioClientConfig.createMinioClient();
 
   private final FileMapper fileMapper;
   private final FilesRepository filesRepository;
