@@ -2,6 +2,7 @@ package mipt.app.secondmemory.controller.file;
 
 import io.minio.Result;
 import io.minio.messages.Item;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +18,6 @@ import mipt.app.secondmemory.service.FilesService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @Slf4j

@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
@@ -141,7 +140,6 @@ public interface FilesController {
       @Parameter(description = "Название бакета и ID пользователя") @RequestBody
           RootDirectoriesRequest rootDirectoriesRequest)
       throws NoSuchBucketException;
-
 
   @PostMapping("/file-search")
   ResponseEntity<List<FileInfoResponse>> searchFilesInDirectory(@RequestBody String name);

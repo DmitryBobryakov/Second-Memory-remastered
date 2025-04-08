@@ -1,8 +1,7 @@
 package mipt.app.secondmemory.dto.file;
 
-import lombok.Builder;
-
 import java.sql.Timestamp;
+import lombok.Builder;
 
 @Builder(toBuilder = true)
 public record FileInfoResponse(
