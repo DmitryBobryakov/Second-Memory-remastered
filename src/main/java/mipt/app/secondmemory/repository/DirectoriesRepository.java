@@ -5,14 +5,14 @@ import io.minio.MinioClient;
 import io.minio.Result;
 import io.minio.messages.Item;
 import mipt.app.secondmemory.configuration.MinioClientConfig;
-import mipt.app.secondmemory.dto.DirectoryInfoRequest;
-import mipt.app.secondmemory.dto.RootDirectoriesRequest;
+import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
+import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class DirectoriesRepository {
 
-  private static final MinioClient minioConfig = MinioClientConfig.getClient();
+  private static final MinioClient minioConfig = MinioClientConfig.createMinioClient();
 
   public Iterable<Result<Item>> getFilesInDirectory(DirectoryInfoRequest directoryInfoRequest) {
     return minioConfig.listObjects(

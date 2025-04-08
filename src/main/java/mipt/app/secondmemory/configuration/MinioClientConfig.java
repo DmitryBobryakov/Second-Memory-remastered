@@ -2,9 +2,10 @@ package mipt.app.secondmemory.configuration;
 
 import io.minio.MinioClient;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@Component
+@Configuration
 public class MinioClientConfig {
   private static String accessKey;
   private static String secretKey;
@@ -25,9 +26,8 @@ public class MinioClientConfig {
     MinioClientConfig.endpoint = endpoint;
   }
 
-  public static MinioClient getClient() {
+  @Bean
+  public static MinioClient createMinioClient() {
     return MinioClient.builder().endpoint(endpoint).credentials(accessKey, secretKey).build();
   }
-
-  private MinioClientConfig() {}
 }

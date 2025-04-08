@@ -49,6 +49,7 @@ public class FileEntity {
 
   @Schema(description = "Id бакета, в котором хранится данный файл", example = "12", type = "Long")
   @Column(name = "bucket_id")
+  @NotNull
   private Long bucketId;
 
   @Schema(description = "Дата создания файла", type = "Timestamp")
