@@ -10,11 +10,14 @@ import mipt.app.secondmemory.dto.message.MessageDto;
 import mipt.app.secondmemory.dto.message.MessageType;
 import mipt.app.secondmemory.dto.user.RequestUserDto;
 import mipt.app.secondmemory.dto.user.UserDto;
+import mipt.app.secondmemory.entity.FileEntity;
+import mipt.app.secondmemory.entity.RoleType;
 import mipt.app.secondmemory.entity.Session;
 import mipt.app.secondmemory.entity.User;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
 import mipt.app.secondmemory.exception.user.AuthenticationDataMismatchException;
 import mipt.app.secondmemory.exception.user.UserNotFoundException;
+import mipt.app.secondmemory.repository.FilesRepository;
 import mipt.app.secondmemory.repository.SessionsRepository;
 import mipt.app.secondmemory.repository.UsersRepository;
 import mipt.app.secondmemory.service.KafkaProducerService;
@@ -22,11 +25,14 @@ import mipt.app.secondmemory.service.UsersService;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
 @Slf4j
 @RequiredArgsConstructor
 public class UsersControllerImpl implements UsersController {
+  private final FilesRepository filesRepository;
   private final UsersRepository usersRepository;
   private final UsersService usersService;
   private final SessionsRepository sessionsRepository;
@@ -141,5 +147,28 @@ public class UsersControllerImpl implements UsersController {
     log.info("UsersController -> logOut() -> Successfully logged out user with uuid {}", uuid);
 
     return ResponseEntity.ok("You have successfully log out. See you soon!");
+  }
+
+  @GetMapping("/test")
+  public void test() {
+    log.info("Someone is here!");
+  }
+
+  @GetMapping("/testRoleAdding")
+  public void testingRoleAdding(@RequestBody String email) throws UserNotFoundException {
+    log.info("Trying to add role");
+    FileEntity file = new FileEntity();
+    file.setName("name");
+    file.setCapacity(12L);
+    file.setOwnerId(1L);
+    file.setBucketId(1L);
+    filesRepository.save(file);
+    usersService.addRole(email, file, RoleType.OWNER);
+  }
+
+  @GetMapping("/testRoleRemoving")
+  public void testingRoleRemoving(@RequestBody String email) throws UserNotFoundException {
+    log.info("Trying to remove role");
+    usersService.removeRole(email, 1L);
   }
 }

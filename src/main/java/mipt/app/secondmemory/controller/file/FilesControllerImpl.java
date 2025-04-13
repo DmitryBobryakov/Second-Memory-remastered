@@ -14,6 +14,7 @@ import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
+import mipt.app.secondmemory.repository.RolesRepository;
 import mipt.app.secondmemory.service.FilesService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class FilesControllerImpl implements FilesController {
   private final FilesService filesService;
+  private final RolesRepository rolesRepository;
 
   @Override
   @SneakyThrows
