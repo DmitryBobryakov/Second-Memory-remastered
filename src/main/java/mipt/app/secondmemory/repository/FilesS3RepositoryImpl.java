@@ -26,7 +26,7 @@ import org.springframework.web.servlet.ModelAndView;
 @Repository
 @Slf4j
 public class FilesS3RepositoryImpl {
-  private static final MinioClient client = MinioClientConfig.createMinioClient();
+  private final MinioClient client = new MinioClientConfig().getClient();
 
   public ModelAndView download(String bucketName, String key)
       throws ServerException,

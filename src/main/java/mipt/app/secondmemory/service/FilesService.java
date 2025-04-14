@@ -17,6 +17,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.configuration.MinioClientConfig;
@@ -53,7 +55,7 @@ public class FilesService {
   private long maxFileSize;
 
   private final FilesS3RepositoryImpl filesS3Repository;
-  private static final MinioClient client = MinioClientConfig.createMinioClient();
+  private final MinioClient client =  new MinioClientConfig().getClient();
 
   private final FileMapper fileMapper;
   private final FilesRepository filesRepository;
