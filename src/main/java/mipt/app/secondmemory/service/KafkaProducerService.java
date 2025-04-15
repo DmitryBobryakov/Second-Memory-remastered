@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.dto.MessageDto;
+import mipt.app.secondmemory.dto.message.MessageDto;
 import org.hibernate.sql.exec.ExecutionException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
