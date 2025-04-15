@@ -71,7 +71,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(NoRoleFoundException.class)
   public ResponseEntity<String> handleNoRoleFoundException(NoRoleFoundException exception) {
-    return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(exception.getMessage());
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
   }
 
   @ExceptionHandler(SessionNotFoundException.class)
