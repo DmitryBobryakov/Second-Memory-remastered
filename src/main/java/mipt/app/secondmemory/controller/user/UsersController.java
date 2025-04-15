@@ -6,14 +6,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
-import mipt.app.secondmemory.dto.user.RequestUserDto;
-import mipt.app.secondmemory.dto.user.UserDto;
+import mipt.app.secondmemory.dto.user.AuthUserRequest;
+import mipt.app.secondmemory.dto.user.RegisterUserResponse;
 import mipt.app.secondmemory.entity.User;
 import mipt.app.secondmemory.exception.user.AuthenticationDataMismatchException;
 import mipt.app.secondmemory.exception.user.UserNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Users API", description = "Управление пользователями")
@@ -32,7 +31,7 @@ public interface UsersController {
       description = "NOT_FOUND | Пользователь с такими данными не найден",
       content = @Content)
   ResponseEntity<String> authenticateUser(
-      @RequestBody RequestUserDto user, HttpServletResponse response)
+      @RequestBody AuthUserRequest user, HttpServletResponse response)
       throws UserNotFoundException, AuthenticationDataMismatchException, JsonProcessingException;
 
   @Operation(summary = "Зарегистрировать пользователя по почте, имени и паролю")
@@ -41,7 +40,8 @@ public interface UsersController {
       responseCode = "400",
       description = "BAD_REQUEST | Пользователь уже зарегистрирован",
       content = @Content)
-  ResponseEntity<UserDto> registerUser(@RequestBody User user) throws JsonProcessingException;
+  ResponseEntity<RegisterUserResponse> registerUser(@RequestBody User user)
+      throws JsonProcessingException;
 
   @Operation(summary = "Изменить данные пользователя")
   @ApiResponse(responseCode = "200", description = "Данные о пользователе изменены")
@@ -60,9 +60,7 @@ public interface UsersController {
       description = "NOT_FOUND | Пользователь с такими данными не найден",
       content = @Content)
   ResponseEntity<String> deleteUser(
-      @PathVariable(name = "username") String username,
-      @RequestBody String email,
-      @CookieValue("token") String cookieValue)
+      @RequestBody String email, @CookieValue("token") String cookieValue)
       throws UserNotFoundException, JsonProcessingException;
 
   @Operation(summary = "Выйти из аккаунта")

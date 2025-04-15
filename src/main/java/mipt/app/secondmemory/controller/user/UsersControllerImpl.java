@@ -8,8 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.message.MessageDto;
 import mipt.app.secondmemory.dto.message.MessageType;
-import mipt.app.secondmemory.dto.user.RequestUserDto;
-import mipt.app.secondmemory.dto.user.UserDto;
+import mipt.app.secondmemory.dto.user.AuthUserRequest;
+import mipt.app.secondmemory.dto.user.RegisterUserResponse;
 import mipt.app.secondmemory.entity.Session;
 import mipt.app.secondmemory.entity.User;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
@@ -24,7 +24,6 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,7 +43,7 @@ public class UsersControllerImpl implements UsersController {
   @Override
   @PostMapping("/sign-in")
   public ResponseEntity<String> authenticateUser(
-      RequestUserDto userDto, HttpServletResponse response)
+      AuthUserRequest userDto, HttpServletResponse response)
       throws UserNotFoundException, AuthenticationDataMismatchException, JsonProcessingException {
     log.info(
         "UsersController -> authenticate() -> Accepted request with email {}", userDto.getEmail());
@@ -81,7 +80,8 @@ public class UsersControllerImpl implements UsersController {
 
   @Override
   @PostMapping("/sign-up")
-  public ResponseEntity<UserDto> registerUser(User user) throws JsonProcessingException {
+  public ResponseEntity<RegisterUserResponse> registerUser(User user)
+      throws JsonProcessingException {
     log.info(
         "UsersController -> registerUser() -> Accepted request with email {}", user.getEmail());
     usersService.create(user);
@@ -91,7 +91,8 @@ public class UsersControllerImpl implements UsersController {
 
     producerService.sendMessage(
         new MessageDto(user.getEmail(), user.getName(), MessageType.REGISTRATION));
-    return ResponseEntity.status(201).body(new UserDto(user.getEmail(), user.getName()));
+    return ResponseEntity.status(201)
+        .body(new RegisterUserResponse(user.getEmail(), user.getName()));
   }
 
   @Override
@@ -111,12 +112,12 @@ public class UsersControllerImpl implements UsersController {
         "UsersController -> updateUser() -> Successfully updated user with email {}",
         user.getEmail());
 
-    return ResponseEntity.ok(new UserDto(user.getEmail(), user.getPassword()).toString());
+    return ResponseEntity.ok(String.format("Data for %s was successfully updated", user.getName()));
   }
 
   @Override
-  @DeleteMapping("/delete/{username}")
-  public ResponseEntity<String> deleteUser(String username, String email, String cookieValue)
+  @DeleteMapping("/delete")
+  public ResponseEntity<String> deleteUser(String email, String cookieValue)
       throws UserNotFoundException, JsonProcessingException {
     log.info("UsersController -> deleteUser() -> Accepted request with email {}", email);
 
@@ -130,7 +131,7 @@ public class UsersControllerImpl implements UsersController {
 
     log.info("UsersController -> deleteUser() -> Successfully deleted user with email {}", email);
 
-    producerService.sendMessage(new MessageDto(email, username, MessageType.DELETION));
+    producerService.sendMessage(new MessageDto(email, user.getName(), MessageType.DELETION));
 
     return ResponseEntity.ok("User " + email + " was successfully deleted");
   }
@@ -154,10 +155,5 @@ public class UsersControllerImpl implements UsersController {
     log.info("UsersController -> logOut() -> Successfully logged out user with uuid {}", uuid);
 
     return ResponseEntity.ok("You have successfully log out. See you soon!");
-  }
-
-  @GetMapping("/test")
-  public void test() {
-    log.info("Someone is here!");
   }
 }

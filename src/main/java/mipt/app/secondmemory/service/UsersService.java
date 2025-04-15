@@ -3,7 +3,7 @@ package mipt.app.secondmemory.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.dto.user.RequestUserDto;
+import mipt.app.secondmemory.dto.user.AuthUserRequest;
 import mipt.app.secondmemory.entity.FileEntity;
 import mipt.app.secondmemory.entity.Role;
 import mipt.app.secondmemory.entity.RoleType;
@@ -40,7 +40,7 @@ public class UsersService {
     return newUser;
   }
 
-  public User authenticate(RequestUserDto user)
+  public User authenticate(AuthUserRequest user)
       throws UserNotFoundException, AuthenticationDataMismatchException {
     log.info("UsersService -> authenticate() -> Accepted request with email {}", user.getEmail());
     User dbUser =
