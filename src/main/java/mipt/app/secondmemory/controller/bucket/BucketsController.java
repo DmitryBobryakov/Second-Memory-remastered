@@ -57,5 +57,5 @@ public interface BucketsController {
           FileNotFoundException;
 
   @GetMapping("/buckets")
-  ResponseEntity<List<BucketDto>> getAllBuckets();
+  ResponseEntity<List<String>> getAllBucketsNames();
 }

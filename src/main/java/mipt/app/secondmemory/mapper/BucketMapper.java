@@ -9,4 +9,8 @@ public class BucketMapper {
   public BucketDto toDto(BucketEntity bucketEntity) {
     return BucketDto.builder().name(bucketEntity.getName()).build();
   }
+
+  public String toBucketName(BucketEntity bucketEntity) {
+    return bucketEntity.getName();
+  }
 }
