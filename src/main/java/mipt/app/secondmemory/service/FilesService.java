@@ -18,10 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.configuration.MinioClientConfig;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
@@ -55,8 +53,7 @@ public class FilesService {
   private long maxFileSize;
 
   private final FilesS3RepositoryImpl filesS3Repository;
-  private final MinioClient client =  new MinioClientConfig().getClient();
-
+  private final MinioClient client;
   private final FileMapper fileMapper;
   private final FilesRepository filesRepository;
   private final DirectoriesRepository directoriesRepository;
