@@ -6,6 +6,8 @@ import mipt.app.secondmemory.exception.file.DatabaseException;
 import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.exception.file.FileServerException;
+import mipt.app.secondmemory.exception.role.NoRoleFoundException;
+import mipt.app.secondmemory.exception.session.SessionNotFoundException;
 import mipt.app.secondmemory.exception.tag.TagNotFoundException;
 import mipt.app.secondmemory.exception.user.AuthenticationDataMismatchException;
 import mipt.app.secondmemory.exception.user.UserAlreadyExistsException;
@@ -64,6 +66,16 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(NoSuchBucketException.class)
   public ResponseEntity<String> handleNoSuchBucketException(NoSuchBucketException exception) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+  }
+
+  @ExceptionHandler(NoRoleFoundException.class)
+  public ResponseEntity<String> handleNoRoleFoundException(NoRoleFoundException exception) {
+    return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(exception.getMessage());
+  }
+
+  @ExceptionHandler(SessionNotFoundException.class)
+  public ResponseEntity<String> handleNoRoleFoundException(SessionNotFoundException exception) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
   }
 }

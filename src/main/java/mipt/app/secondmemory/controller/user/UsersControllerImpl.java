@@ -10,8 +10,6 @@ import mipt.app.secondmemory.dto.message.MessageDto;
 import mipt.app.secondmemory.dto.message.MessageType;
 import mipt.app.secondmemory.dto.user.RequestUserDto;
 import mipt.app.secondmemory.dto.user.UserDto;
-import mipt.app.secondmemory.entity.FileEntity;
-import mipt.app.secondmemory.entity.RoleType;
 import mipt.app.secondmemory.entity.Session;
 import mipt.app.secondmemory.entity.User;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
@@ -25,12 +23,16 @@ import mipt.app.secondmemory.service.UsersService;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @Slf4j
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/users")
 public class UsersControllerImpl implements UsersController {
   private final FilesRepository filesRepository;
   private final UsersRepository usersRepository;
@@ -40,6 +42,7 @@ public class UsersControllerImpl implements UsersController {
   private final Instant date = Instant.now();
 
   @Override
+  @PostMapping("/sign-in")
   public ResponseEntity<String> authenticateUser(
       RequestUserDto userDto, HttpServletResponse response)
       throws UserNotFoundException, AuthenticationDataMismatchException, JsonProcessingException {
@@ -52,7 +55,7 @@ public class UsersControllerImpl implements UsersController {
 
     Cookie cookie =
         new Cookie(
-            "data",
+            "token",
             BCrypt.hashpw(String.valueOf(user.getId() + date.getEpochSecond()), BCrypt.gensalt()));
     cookie.setPath("/");
     cookie.setMaxAge(86400);
@@ -77,6 +80,7 @@ public class UsersControllerImpl implements UsersController {
   }
 
   @Override
+  @PostMapping("/sign-up")
   public ResponseEntity<UserDto> registerUser(User user) throws JsonProcessingException {
     log.info(
         "UsersController -> registerUser() -> Accepted request with email {}", user.getEmail());
@@ -91,6 +95,7 @@ public class UsersControllerImpl implements UsersController {
   }
 
   @Override
+  @PatchMapping("/update")
   public ResponseEntity<String> updateUser(User user, String cookieValue)
       throws UserNotFoundException {
     log.info("UsersController -> updateUser() -> Accepted request with email {}", user.getEmail());
@@ -110,6 +115,7 @@ public class UsersControllerImpl implements UsersController {
   }
 
   @Override
+  @DeleteMapping("/delete/{username}")
   public ResponseEntity<String> deleteUser(String username, String email, String cookieValue)
       throws UserNotFoundException, JsonProcessingException {
     log.info("UsersController -> deleteUser() -> Accepted request with email {}", email);
@@ -130,6 +136,7 @@ public class UsersControllerImpl implements UsersController {
   }
 
   @Override
+  @PostMapping("/logout")
   public ResponseEntity<String> logOut(String requestUuid, HttpServletResponse response)
       throws UserNotFoundException {
     log.info("UsersController -> logOut() -> Accepted request user with uuid {}", requestUuid);
@@ -137,7 +144,7 @@ public class UsersControllerImpl implements UsersController {
     Session session = sessionsRepository.findByUserId(uuid).orElseThrow(UserNotFoundException::new);
     sessionsRepository.delete(session);
 
-    Cookie cookie = new Cookie("data", null);
+    Cookie cookie = new Cookie("token", null);
     cookie.setMaxAge(0);
     cookie.setSecure(true);
     cookie.setHttpOnly(true);
@@ -152,23 +159,5 @@ public class UsersControllerImpl implements UsersController {
   @GetMapping("/test")
   public void test() {
     log.info("Someone is here!");
-  }
-
-  @GetMapping("/testRoleAdding")
-  public void testingRoleAdding(@RequestBody String email) throws UserNotFoundException {
-    log.info("Trying to add role");
-    FileEntity file = new FileEntity();
-    file.setName("name");
-    file.setCapacity(12L);
-    file.setOwnerId(1L);
-    file.setBucketId(1L);
-    filesRepository.save(file);
-    usersService.addRole(email, file, RoleType.OWNER);
-  }
-
-  @GetMapping("/testRoleRemoving")
-  public void testingRoleRemoving(@RequestBody String email) throws UserNotFoundException {
-    log.info("Trying to remove role");
-    usersService.removeRole(email, 1L);
   }
 }
