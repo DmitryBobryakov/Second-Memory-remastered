@@ -26,6 +26,15 @@ spring:
 topic-to-send-message: events-topic
 
 management:
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        all: true
+    tags:
+      service: "user-service"
   endpoints:
     web:
       exposure:
