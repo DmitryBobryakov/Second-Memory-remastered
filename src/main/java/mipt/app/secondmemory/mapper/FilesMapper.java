@@ -1,12 +1,12 @@
 package mipt.app.secondmemory.mapper;
 
+import lombok.experimental.UtilityClass;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.entity.FileEntity;
-import org.springframework.stereotype.Component;
 
-@Component
-public class FileMapper {
-  public FileInfoResponse toDto(FileEntity fileEntity) {
+@UtilityClass
+public class FilesMapper {
+  public static FileInfoResponse toDto(FileEntity fileEntity) {
     return FileInfoResponse.builder()
         .fileCapacity(fileEntity.getCapacity())
         .fileName(fileEntity.getName())

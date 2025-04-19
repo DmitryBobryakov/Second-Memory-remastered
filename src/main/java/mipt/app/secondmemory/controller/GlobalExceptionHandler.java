@@ -5,7 +5,7 @@ import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
 import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
-import mipt.app.secondmemory.exception.file.FileServerException;
+import mipt.app.secondmemory.exception.session.SessionNotFoundException;
 import mipt.app.secondmemory.exception.tag.TagNotFoundException;
 import mipt.app.secondmemory.exception.user.AuthenticationDataMismatchException;
 import mipt.app.secondmemory.exception.user.UserAlreadyExistsException;
@@ -42,11 +42,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
   }
 
-  @ExceptionHandler(FileServerException.class)
-  public ResponseEntity<String> handleFileNotSuccessUpload(FileServerException exception) {
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
-  }
-
   @ExceptionHandler(FileNotFoundException.class)
   public ResponseEntity<String> handleFileNotFound(FileNotFoundException exception) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
@@ -64,6 +59,11 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(NoSuchBucketException.class)
   public ResponseEntity<String> handleNoSuchBucketException(NoSuchBucketException exception) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+  }
+
+  @ExceptionHandler(SessionNotFoundException.class)
+  public ResponseEntity<String> handleSessionNotFoundException(SessionNotFoundException exception) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
   }
 }

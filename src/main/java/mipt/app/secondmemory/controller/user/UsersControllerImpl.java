@@ -22,10 +22,12 @@ import mipt.app.secondmemory.service.UsersService;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @Slf4j
 @RequiredArgsConstructor
+@RequestMapping("/api/v1")
 public class UsersControllerImpl implements UsersController {
   private final UsersRepository usersRepository;
   private final UsersService usersService;

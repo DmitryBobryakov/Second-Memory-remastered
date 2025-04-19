@@ -53,12 +53,12 @@ public class FileEntity {
   private Long bucketId;
 
   @Schema(description = "Дата создания файла", type = "Timestamp")
-  @Column(name = "creation_date")
+  @Column(name = "creation_ts")
   @NotNull(message = "File creation date has to be filled")
   private Timestamp creationDate;
 
   @Schema(description = "Последняя дата обновления файла", type = "Timestamp")
-  @Column(name = "last_modified_date")
+  @Column(name = "last_modified_ts")
   @NotNull(message = "File last modified date has to be filled")
   private Timestamp lastModifiedDate;
 

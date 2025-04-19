@@ -1,10 +1,19 @@
 package mipt.app.secondmemory.controller.file;
 
 import io.minio.Result;
+import io.minio.errors.ErrorResponseException;
+import io.minio.errors.InsufficientDataException;
+import io.minio.errors.InternalException;
+import io.minio.errors.InvalidResponseException;
+import io.minio.errors.ServerException;
+import io.minio.errors.XmlParserException;
 import io.minio.messages.Item;
+
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
@@ -13,51 +22,101 @@ import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
+import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.service.FilesService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
+@RequestMapping("/api/v1")
 public class FilesControllerImpl implements FilesController {
   private final FilesService filesService;
 
   @Override
-  @SneakyThrows
-  public ResponseEntity<Void> uploadSingle(String bucketName, MultipartFile file) {
-    filesService.uploadSingle(bucketName, file);
+  public ResponseEntity<Void> uploadFiles(String bucketName, MultipartFile file)
+      throws ServerException,
+          InsufficientDataException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          FileMemoryOverflowException,
+          InvalidKeyException,
+          NoSuchBucketException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException {
+    filesService.uploadFiles(bucketName, file);
     return ResponseEntity.ok().build();
   }
 
   @Override
-  @SneakyThrows
-  public ResponseEntity<Void> rename(String bucketName, String oldKey, String newKey) {
-    filesService.rename(bucketName, oldKey, newKey);
+  public ResponseEntity<Void> renameFile(String bucketName, String oldKey, String newKey)
+      throws ServerException,
+          InsufficientDataException,
+          FileNotFoundException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException {
+    filesService.renameFile(bucketName, oldKey, newKey);
     return ResponseEntity.ok().build();
   }
 
   @Override
-  @SneakyThrows
-  public ResponseEntity<Void> delete(String bucketName, String key) {
-    filesService.delete(bucketName, key);
+  public ResponseEntity<Void> deleteFile(String bucketName, String key)
+      throws ServerException,
+          InsufficientDataException,
+          FileNotFoundException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException {
+    filesService.deleteFile(bucketName, key);
     return ResponseEntity.ok().build();
   }
 
   @Override
-  @SneakyThrows
   public ResponseEntity<Void> moveInBucket(
-      String bucketName, String fileName, String oldPath, String newPath) {
+      String bucketName, String fileName, String oldPath, String newPath)
+      throws ServerException,
+          InsufficientDataException,
+          FileNotFoundException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException {
     filesService.moveInBucket(bucketName, fileName, oldPath, newPath);
     return ResponseEntity.ok().build();
   }
 
   @Override
-  @SneakyThrows
   public ResponseEntity<Void> moveBetweenBuckets(
-      String oldBucketName, String newBucketName, String key) {
+      String oldBucketName, String newBucketName, String key)
+      throws ServerException,
+          InsufficientDataException,
+          FileNotFoundException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          NoSuchBucketException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException {
     filesService.moveBetweenBuckets(oldBucketName, newBucketName, key);
     return ResponseEntity.ok().build();
   }

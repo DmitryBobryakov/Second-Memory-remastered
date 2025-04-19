@@ -17,16 +17,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.configuration.MinioClientConfig;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 @Repository
 @Slf4j
+@RequiredArgsConstructor
 public class FilesS3RepositoryImpl {
-  private static final MinioClient client = MinioClientConfig.createMinioClient();
+  private final MinioClient client;
 
   public ModelAndView download(String bucketName, String key)
       throws ServerException,
