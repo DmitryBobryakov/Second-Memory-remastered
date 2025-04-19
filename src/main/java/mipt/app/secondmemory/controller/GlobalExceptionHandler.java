@@ -5,6 +5,7 @@ import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
 import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
+import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
 import mipt.app.secondmemory.exception.tag.TagNotFoundException;
 import mipt.app.secondmemory.exception.user.AuthenticationDataMismatchException;
@@ -65,5 +66,11 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(SessionNotFoundException.class)
   public ResponseEntity<String> handleSessionNotFoundException(SessionNotFoundException exception) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+  }
+
+  @ExceptionHandler(FileAlreadyExistsException.class)
+  public ResponseEntity<String> handleFileAlreadyExistsException(
+      FileAlreadyExistsException exception) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
   }
 }

@@ -23,6 +23,7 @@ import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
+import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
 import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import org.springframework.http.ResponseEntity;
@@ -84,28 +85,13 @@ public interface FilesController {
           InternalException,
           FileNotFoundException;
 
-  @PostMapping("/files/moveInBucket/{bucketName}/{fileName}")
-  ResponseEntity<Void> moveInBucket(
-      @PathVariable(name = "bucketName") String bucketName,
-      @PathVariable(name = "fileName") String fileName,
-      @RequestParam String oldPath,
-      @RequestParam String newPath)
-      throws ServerException,
-          InsufficientDataException,
-          ErrorResponseException,
-          IOException,
-          NoSuchAlgorithmException,
-          InvalidKeyException,
-          InvalidResponseException,
-          XmlParserException,
-          InternalException,
-          FileNotFoundException;
-
-  @PostMapping("/files/moveInBucket/{oldBucketName}/{newBucketName}")
-  ResponseEntity<Void> moveBetweenBuckets(
+  @PostMapping("/files/move/{oldBucketName}/{newBucketName}")
+  ResponseEntity<Void> moveFile(
       @PathVariable(name = "oldBucketName") String oldBucketName,
       @PathVariable(name = "newBucketName") String newBucketName,
-      @RequestParam String key)
+      @RequestParam(name = "fileName") String fileName,
+      @RequestParam(name = "oldPath") String oldPath,
+      @RequestParam(name = "newPath") String newPath)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -116,6 +102,7 @@ public interface FilesController {
           XmlParserException,
           InternalException,
           FileNotFoundException,
+          FileAlreadyExistsException,
           NoSuchBucketException;
 
   @Operation(summary = "Получение информации о файле по ID")

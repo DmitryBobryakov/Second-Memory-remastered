@@ -24,6 +24,7 @@ import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
+import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
 import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.mapper.FilesMapper;
@@ -136,8 +137,10 @@ public class FilesService {
     filesS3Repository.delete(bucketName, key);
   }
 
-  public void moveInBucket(String bucketName, String fileName, String oldPath, String newPath)
-      throws ServerException,
+  public void move(
+      String oldBucketName, String newBucketName, String fileName, String oldPath, String newPath)
+      throws FileNotFoundException,
+          ServerException,
           InsufficientDataException,
           ErrorResponseException,
           IOException,
@@ -146,42 +149,24 @@ public class FilesService {
           InvalidResponseException,
           XmlParserException,
           InternalException,
-          FileNotFoundException {
-    log.debug("Функция по перемещению файла внутри бакета вызвана в репозитории");
-    if (!checkFileExists(bucketName, oldPath + "/" + fileName)) {
-      throw new FileNotFoundException(
-          "File does not exist on the way: " + bucketName + "/" + oldPath + "/" + fileName);
-    }
-    filesS3Repository.moveInBucket(bucketName, fileName, oldPath, newPath);
-  }
-
-  public void moveBetweenBuckets(String oldBucketName, String newBucketName, String key)
-      throws ServerException,
-          InsufficientDataException,
-          ErrorResponseException,
-          IOException,
-          NoSuchAlgorithmException,
-          InvalidKeyException,
-          InvalidResponseException,
-          XmlParserException,
-          InternalException,
-          FileNotFoundException,
+          FileAlreadyExistsException,
           NoSuchBucketException {
-    log.debug("Функция по перемещению файла через бакеты вызвана в репозитории");
-
-    if (!checkFileExists(oldBucketName, key)) {
+    log.debug("Функция по перемещению файла внутри бакета вызвана в репозитории");
+    String oldKey = oldPath + "/" + fileName;
+    String newKey = newPath + "/" + fileName;
+    if (!checkFileExists(oldBucketName, oldKey)) {
       throw new FileNotFoundException(
-          "File does not exist on the way: " + oldBucketName + "/" + key);
+          "File does not exist on the way: " + oldBucketName + "/" + oldKey);
     }
     boolean found = client.bucketExists(BucketExistsArgs.builder().bucket(newBucketName).build());
     if (!found) {
       throw new NoSuchBucketException("Bucket does not exist with name: " + newBucketName);
     }
-    if (checkFileExists(newBucketName, key)) {
-      throw new FileNotFoundException(
-          "File does not exist on the way: " + newBucketName + "/" + key);
+    if (checkFileExists(newBucketName, newKey)) {
+      throw new FileAlreadyExistsException(
+          "File already exists on the way: " + newBucketName + "/" + newKey);
     }
-    filesS3Repository.moveBetweenBuckets(oldBucketName, newBucketName, key);
+    filesS3Repository.move(oldBucketName, newBucketName, fileName, oldPath, newPath);
   }
 
   @Cacheable(

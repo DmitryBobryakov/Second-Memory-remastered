@@ -22,6 +22,7 @@ import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
+import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
 import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.service.FilesService;
@@ -87,8 +88,8 @@ public class FilesControllerImpl implements FilesController {
   }
 
   @Override
-  public ResponseEntity<Void> moveInBucket(
-      String bucketName, String fileName, String oldPath, String newPath)
+  public ResponseEntity<Void> moveFile(
+      String oldBucketName, String newBucketName, String fileName, String oldPath, String newPath)
       throws ServerException,
           InsufficientDataException,
           FileNotFoundException,
@@ -98,26 +99,10 @@ public class FilesControllerImpl implements FilesController {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException {
-    filesService.moveInBucket(bucketName, fileName, oldPath, newPath);
-    return ResponseEntity.ok().build();
-  }
-
-  @Override
-  public ResponseEntity<Void> moveBetweenBuckets(
-      String oldBucketName, String newBucketName, String key)
-      throws ServerException,
-          InsufficientDataException,
-          FileNotFoundException,
-          ErrorResponseException,
-          IOException,
-          NoSuchAlgorithmException,
-          InvalidKeyException,
-          NoSuchBucketException,
-          InvalidResponseException,
-          XmlParserException,
-          InternalException {
-    filesService.moveBetweenBuckets(oldBucketName, newBucketName, key);
+          InternalException,
+          FileAlreadyExistsException,
+          NoSuchBucketException {
+    filesService.move(oldBucketName, newBucketName, fileName, oldPath, newPath);
     return ResponseEntity.ok().build();
   }
 
