@@ -1,16 +1,16 @@
 package mipt.app.secondmemory.controller;
 
-import mipt.app.secondmemory.exception.AuthenticationDataMismatchException;
-import mipt.app.secondmemory.exception.DatabaseException;
-import mipt.app.secondmemory.exception.FileMemoryOverflowException;
-import mipt.app.secondmemory.exception.FileNotFoundException;
-import mipt.app.secondmemory.exception.FileServerException;
-import mipt.app.secondmemory.exception.NoSuchBucketException;
-import mipt.app.secondmemory.exception.NoSuchDirectoryException;
-import mipt.app.secondmemory.exception.NoSuchFileException;
-import mipt.app.secondmemory.exception.TagNotFoundException;
-import mipt.app.secondmemory.exception.UserAlreadyExistsException;
-import mipt.app.secondmemory.exception.UserNotFoundException;
+import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
+import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
+import mipt.app.secondmemory.exception.file.DatabaseException;
+import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
+import mipt.app.secondmemory.exception.file.FileNotFoundException;
+import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
+import mipt.app.secondmemory.exception.session.SessionNotFoundException;
+import mipt.app.secondmemory.exception.tag.TagNotFoundException;
+import mipt.app.secondmemory.exception.user.AuthenticationDataMismatchException;
+import mipt.app.secondmemory.exception.user.UserAlreadyExistsException;
+import mipt.app.secondmemory.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -33,11 +33,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
   }
 
-  @ExceptionHandler(FileNotFoundException.class)
-  public ResponseEntity<String> handleFileNotFound(FileNotFoundException exception) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-  }
-
   @ExceptionHandler(FileMemoryOverflowException.class)
   public ResponseEntity<String> handleFileMemoryOverflow(FileMemoryOverflowException exception) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
@@ -48,13 +43,8 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
   }
 
-  @ExceptionHandler(FileServerException.class)
-  public ResponseEntity<String> handleFileNotSuccessUpload(FileServerException exception) {
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
-  }
-
-  @ExceptionHandler(NoSuchFileException.class)
-  public ResponseEntity<String> handleNoSuchFileException(NoSuchFileException exception) {
+  @ExceptionHandler(FileNotFoundException.class)
+  public ResponseEntity<String> handleFileNotFound(FileNotFoundException exception) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
   }
 
@@ -71,5 +61,16 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(NoSuchBucketException.class)
   public ResponseEntity<String> handleNoSuchBucketException(NoSuchBucketException exception) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+  }
+
+  @ExceptionHandler(SessionNotFoundException.class)
+  public ResponseEntity<String> handleSessionNotFoundException(SessionNotFoundException exception) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+  }
+
+  @ExceptionHandler(FileAlreadyExistsException.class)
+  public ResponseEntity<String> handleFileAlreadyExistsException(
+      FileAlreadyExistsException exception) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
   }
 }
