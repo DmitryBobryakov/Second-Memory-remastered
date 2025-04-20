@@ -49,15 +49,16 @@ public class FileEntity {
 
   @Schema(description = "Id бакета, в котором хранится данный файл", example = "12", type = "Long")
   @Column(name = "bucket_id")
+  @NotNull
   private Long bucketId;
 
   @Schema(description = "Дата создания файла", type = "Timestamp")
-  @Column(name = "creation_date")
+  @Column(name = "creation_ts")
   @NotNull(message = "File creation date has to be filled")
   private Timestamp creationDate;
 
   @Schema(description = "Последняя дата обновления файла", type = "Timestamp")
-  @Column(name = "last_modified_date")
+  @Column(name = "last_modified_ts")
   @NotNull(message = "File last modified date has to be filled")
   private Timestamp lastModifiedDate;
 

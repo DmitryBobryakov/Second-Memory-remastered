@@ -3,7 +3,7 @@ package mipt.app.secondmemory;
 import static org.junit.jupiter.api.Assertions.*;
 
 import jakarta.servlet.http.HttpServletResponse;
-import mipt.app.secondmemory.dto.UserDto;
+import mipt.app.secondmemory.dto.user.UserDto;
 import mipt.app.secondmemory.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
