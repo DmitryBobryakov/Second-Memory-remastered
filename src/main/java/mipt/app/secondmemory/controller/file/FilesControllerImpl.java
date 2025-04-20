@@ -8,6 +8,7 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.messages.Item;
+import jakarta.servlet.http.Part;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -23,13 +24,12 @@ import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
 import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
-import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
+import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.service.FilesService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @Slf4j
@@ -39,19 +39,19 @@ public class FilesControllerImpl implements FilesController {
   private final FilesService filesService;
 
   @Override
-  public ResponseEntity<Void> uploadFiles(String bucketName, MultipartFile file)
+  public ResponseEntity<Void> uploadFiles(String bucketName, Part file)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
           IOException,
           NoSuchAlgorithmException,
-          FileMemoryOverflowException,
+          FileMemoryLimitExceededException,
           InvalidKeyException,
           NoSuchBucketException,
           InvalidResponseException,
           XmlParserException,
           InternalException {
-    filesService.uploadFiles(bucketName, file);
+    filesService.uploadFile(bucketName, file);
     return ResponseEntity.ok().build();
   }
 
@@ -102,7 +102,7 @@ public class FilesControllerImpl implements FilesController {
           InternalException,
           FileAlreadyExistsException,
           NoSuchBucketException {
-    filesService.move(oldBucketName, newBucketName, fileName, oldPath, newPath);
+    filesService.moveFile(oldBucketName, newBucketName, fileName, oldPath, newPath);
     return ResponseEntity.ok().build();
   }
 

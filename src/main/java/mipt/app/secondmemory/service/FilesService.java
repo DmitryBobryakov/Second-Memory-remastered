@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+
+import jakarta.servlet.http.Part;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
@@ -25,7 +27,7 @@ import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
 import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
-import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
+import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.mapper.FilesMapper;
 import mipt.app.secondmemory.repository.DirectoriesRepository;
@@ -37,15 +39,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class FilesService {
-  @Value("${mipt.app.servlet.multipart.files_max_size}")
-  private long filesMaxSize;
+  @Value("${mipt.app.servlet.part.file_max_size}")
+  private long fileMemoryLimit;
 
   private final FilesS3RepositoryImpl filesS3Repository;
   private final MinioClient client;
@@ -68,11 +69,11 @@ public class FilesService {
     if (!checkFileExists(bucketName, key)) {
       throw new FileNotFoundException("File does not exist on the way: " + bucketName + "/" + key);
     }
-    return filesS3Repository.download(bucketName, key);
+    return filesS3Repository.downloadFile(bucketName, key);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public void uploadFiles(String bucketName, MultipartFile files)
+  public void uploadFile(String bucketName, Part files)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -82,17 +83,17 @@ public class FilesService {
           InvalidResponseException,
           XmlParserException,
           InternalException,
-          FileMemoryOverflowException,
+          FileMemoryLimitExceededException,
           NoSuchBucketException {
     log.debug("Функция по загрузке файла вызвана в сервисе");
     boolean found = client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
     if (!found) {
       throw new NoSuchBucketException("Bucket does not exist with name: " + bucketName);
     }
-    if (files.getSize() > filesMaxSize) {
-      throw new FileMemoryOverflowException("Files are too large: " + filesMaxSize);
+    if (files.getSize() > fileMemoryLimit) {
+      throw new FileMemoryLimitExceededException("Files are too large: " + fileMemoryLimit);
     }
-    filesS3Repository.upload(bucketName, files);
+    filesS3Repository.uploadFile(bucketName, files);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
@@ -115,7 +116,7 @@ public class FilesService {
       throw new FileNotFoundException(
           "File does not exist on the way: " + bucketName + "/" + oldKey);
     }
-    filesS3Repository.rename(bucketName, oldKey, newKey);
+    filesS3Repository.renameFile(bucketName, oldKey, newKey);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
@@ -134,10 +135,10 @@ public class FilesService {
     if (!checkFileExists(bucketName, key)) {
       throw new FileNotFoundException("File does not exist on the way: " + bucketName + "/" + key);
     }
-    filesS3Repository.delete(bucketName, key);
+    filesS3Repository.deleteFile(bucketName, key);
   }
 
-  public void move(
+  public void moveFile(
       String oldBucketName, String newBucketName, String fileName, String oldPath, String newPath)
       throws FileNotFoundException,
           ServerException,
@@ -166,7 +167,7 @@ public class FilesService {
       throw new FileAlreadyExistsException(
           "File already exists on the way: " + newBucketName + "/" + newKey);
     }
-    filesS3Repository.move(oldBucketName, newBucketName, fileName, oldPath, newPath);
+    filesS3Repository.moveFile(oldBucketName, newBucketName, fileName, oldPath, newPath);
   }
 
   @Cacheable(

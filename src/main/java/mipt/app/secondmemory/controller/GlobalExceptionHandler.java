@@ -3,7 +3,7 @@ package mipt.app.secondmemory.controller;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
-import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
+import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
@@ -33,8 +33,9 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
   }
 
-  @ExceptionHandler(FileMemoryOverflowException.class)
-  public ResponseEntity<String> handleFileMemoryOverflow(FileMemoryOverflowException exception) {
+  @ExceptionHandler(FileMemoryLimitExceededException.class)
+  public ResponseEntity<String> handleFileMemoryLimitExceededException(
+      FileMemoryLimitExceededException exception) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
   }
 

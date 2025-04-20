@@ -17,11 +17,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
+import java.time.Instant;
 
+import jakarta.servlet.http.Part;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mipt.app.secondmemory.entity.FileEntity;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.ModelAndView;
 
 @Repository
@@ -29,8 +35,10 @@ import org.springframework.web.servlet.ModelAndView;
 @RequiredArgsConstructor
 public class FilesS3RepositoryImpl {
   private final MinioClient client;
+  private final FilesRepository filesRepository;
+  private final BucketsRepository bucketsRepository;
 
-  public ModelAndView download(String bucketName, String key)
+  public ModelAndView downloadFile(String bucketName, String key)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -52,7 +60,8 @@ public class FilesS3RepositoryImpl {
     return new ModelAndView("redirect:" + url);
   }
 
-  public void upload(String bucketName, MultipartFile file)
+  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT)
+  public void uploadFile(String bucketName, Part file)
       throws IOException,
           InsufficientDataException,
           ErrorResponseException,
@@ -65,18 +74,30 @@ public class FilesS3RepositoryImpl {
     log.debug(
         "Функция по загрузке файла вызвана в репозитории. Bucket: {}, key: {}",
         bucketName,
-        file.getOriginalFilename());
+        file.getName());
 
-    String fileName = file.getOriginalFilename();
+    String fileName = file.getSubmittedFileName();
     InputStream fileInputStream = file.getInputStream();
 
     client.putObject(
         PutObjectArgs.builder().bucket(bucketName).object(fileName).stream(
                 fileInputStream, -1, 10485760)
             .build());
+    Long bucketId = bucketsRepository.findByName(bucketName); // Взять bucketId из buckets
+    Long ownerId = 1L; // Надо изменить потом
+    Timestamp currentTimestamp = Timestamp.from(Instant.now());
+    filesRepository.save(
+        FileEntity.builder()
+            .name(fileName)
+            .bucketId(bucketId)
+            .capacity(file.getSize())
+            .creationDate(currentTimestamp)
+            .lastModifiedDate(currentTimestamp)
+            .ownerId(ownerId)
+            .build());
   }
 
-  public void rename(String bucketName, String oldKey, String newKey)
+  public void renameFile(String bucketName, String oldKey, String newKey)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -97,10 +118,10 @@ public class FilesS3RepositoryImpl {
             .object(newKey)
             .source(CopySource.builder().bucket(bucketName).object(oldKey).build())
             .build());
-    delete(bucketName, oldKey);
+    deleteFile(bucketName, oldKey);
   }
 
-  public void delete(String bucketName, String key)
+  public void deleteFile(String bucketName, String key)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -115,7 +136,7 @@ public class FilesS3RepositoryImpl {
     client.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(key).build());
   }
 
-  public void move(
+  public void moveFile(
       String oldBucketName, String newBucketName, String fileName, String oldPath, String newPath)
       throws ServerException,
           InsufficientDataException,
@@ -140,6 +161,6 @@ public class FilesS3RepositoryImpl {
             .object(newKey)
             .source(CopySource.builder().bucket(oldBucketName).object(oldKey).build())
             .build());
-    delete(oldBucketName, oldKey);
+    deleteFile(oldBucketName, oldKey);
   }
 }
