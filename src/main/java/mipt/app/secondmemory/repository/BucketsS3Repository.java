@@ -5,6 +5,7 @@ import io.minio.ListObjectsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.RemoveBucketArgs;
+import io.minio.RemoveObjectArgs;
 import io.minio.Result;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
@@ -44,7 +45,7 @@ public class BucketsS3Repository {
     }
   }
 
-  public void deleteBucket(String bucketName)
+  public void deleteBucket(String bucketName, String folderPrefix)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -58,13 +59,26 @@ public class BucketsS3Repository {
     // remove the contents from the bucket. MinIO
     ArrayList<String> filesNames = new ArrayList<>();
     for (Result<Item> result :
-        client.listObjects(ListObjectsArgs.builder().bucket(bucketName).recursive(true).build())) {
+        client.listObjects(
+            ListObjectsArgs.builder()
+                .bucket(bucketName)
+                .prefix(folderPrefix)
+                .recursive(true)
+                .build())) {
+      if (result.get().objectName().equals(folderPrefix)) {
+        continue;
+      }
       filesNames.add(result.get().objectName());
     }
     for (String fileName : filesNames) {
       filesService.delete(bucketName, fileName);
     }
     // remove bucket from MinIO
-    client.removeBucket(RemoveBucketArgs.builder().bucket(bucketName).build());
+//    if (folderPrefix.equals("/")) {
+//      client.removeBucket(RemoveBucketArgs.builder().bucket(bucketName).build());
+//    } else {
+//      client.removeObject(
+//          RemoveObjectArgs.builder().bucket(bucketName).object(folderPrefix).build());
+//    }
   }
 }

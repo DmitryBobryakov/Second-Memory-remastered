@@ -13,14 +13,16 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.http.Method;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
+import jakarta.servlet.http.Part;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.configuration.MinioClientConfig;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
@@ -164,5 +166,50 @@ public class FilesS3RepositoryImpl {
             .source(CopySource.builder().bucket(oldBucketName).object(key).build())
             .build());
     delete(oldBucketName, key);
+  }
+
+  public void createFolder(String bucketName, String pathToFolder)
+      throws ServerException,
+          InsufficientDataException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException {
+    log.debug(
+        "Функция по созданию папки вызвана в репозитории. Bucket: {}, folderName: {}",
+        bucketName,
+        pathToFolder);
+    client.putObject(
+        PutObjectArgs.builder().bucket(bucketName).object(pathToFolder + "/").stream(
+                new ByteArrayInputStream(new byte[] {}), 0, -1)
+            .build());
+  }
+
+  public void uploadFileToFolder(String bucketName, Part file, String pathToFolder)
+      throws IOException,
+          ServerException,
+          InsufficientDataException,
+          ErrorResponseException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException {
+    log.debug(
+        "Функция по загрузке файла в папку вызвана в репозитории. Bucket: {}, fileName: {}, pathToFolder: {}",
+        bucketName,
+        file.getSubmittedFileName(),
+        pathToFolder);
+
+    String fileName = file.getSubmittedFileName();
+    InputStream fileInputStream = file.getInputStream();
+
+    client.putObject(
+        PutObjectArgs.builder().bucket(bucketName).object(pathToFolder + "/" + fileName).stream(
+                fileInputStream, -1, 10485760)
+            .build());
   }
 }

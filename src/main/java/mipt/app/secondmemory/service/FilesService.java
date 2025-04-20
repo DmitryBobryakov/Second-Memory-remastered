@@ -184,6 +184,21 @@ public class FilesService {
     filesS3Repository.moveBetweenBuckets(oldBucketName, newBucketName, key);
   }
 
+  public void createFolder(String bucketName, String folderName)
+      throws ServerException,
+          InsufficientDataException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException {
+    filesS3Repository.createFolder(bucketName, folderName);
+  }
+
+
+
   @Cacheable(
       cacheNames = {"receivedFileInfo"},
       key = "{#fileId}")

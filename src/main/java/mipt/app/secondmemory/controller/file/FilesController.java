@@ -117,6 +117,19 @@ public interface FilesController {
           XmlParserException,
           InternalException;
 
+  @PostMapping("/files/{bucketName}/create/folder")
+  void createFolder(
+      @PathVariable(name = "bucketName") String bucketName, @RequestParam String folderName)
+      throws ServerException,
+          InsufficientDataException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException;
+
   @Operation(summary = "Получение информации о файле по ID")
   @ApiResponse(responseCode = "200", description = "Информация о файле получена")
   @GetMapping("/info/file/{fileId}")

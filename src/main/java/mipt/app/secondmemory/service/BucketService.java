@@ -59,7 +59,7 @@ public class BucketService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
-  public BucketDto deleteBucket(Long bucketId)
+  public BucketDto deleteBucket(Long bucketId, String folderPrefix)
       throws BucketNotFoundException,
           ServerException,
           InsufficientDataException,
@@ -79,7 +79,7 @@ public class BucketService {
     String bucketName = bucketEntity.getName();
     bucketsJpaRepository.deleteById(bucketId);
     // remove bucket from Minio
-    bucketsS3Repository.deleteBucket(bucketName);
+    bucketsS3Repository.deleteBucket(bucketName, folderPrefix);
     return bucketMapper.toDto(bucketEntity);
   }
 

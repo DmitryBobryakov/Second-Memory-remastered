@@ -48,7 +48,7 @@ public class BucketsControllerImpl implements BucketsController {
   }
 
   @Override
-  public ResponseEntity<BucketDto> deleteBucket(Long bucketId)
+  public ResponseEntity<BucketDto> deleteBucket(Long bucketId, String folderPrefix)
       throws BucketNotFoundException,
           ServerException,
           InsufficientDataException,
@@ -60,7 +60,7 @@ public class BucketsControllerImpl implements BucketsController {
           XmlParserException,
           InternalException,
           FileNotFoundException {
-    return ResponseEntity.ok(bucketService.deleteBucket(bucketId));
+    return ResponseEntity.ok(bucketService.deleteBucket(bucketId, folderPrefix));
   }
 
   @Override

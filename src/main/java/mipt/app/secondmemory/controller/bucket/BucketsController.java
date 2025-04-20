@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -43,7 +44,9 @@ public interface BucketsController {
           InternalException;
 
   @DeleteMapping("/buckets/delete/{bucketId}")
-  ResponseEntity<BucketDto> deleteBucket(@PathVariable(value = "bucketId") Long bucketId)
+  ResponseEntity<BucketDto> deleteBucket(
+      @PathVariable(value = "bucketId") Long bucketId,
+      @RequestParam(name = "prefix") String folderPrefix)
       throws BucketNotFoundException,
           ServerException,
           InsufficientDataException,
