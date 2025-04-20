@@ -170,7 +170,7 @@ public class FilesService {
   }
 
   @Cacheable(
-      cacheNames = {"receivedFileInfo"},
+      cacheNames = {"fileInfo"},
       key = "{#fileId}")
   public FileInfoResponse getFileInfo(long fileId, FileInfoRequest fileInfoRequest)
       throws FileNotFoundException, DatabaseException {
@@ -195,7 +195,7 @@ public class FilesService {
   }
 
   @Cacheable(
-      cacheNames = {"receivedFilesInDirectory"},
+      cacheNames = {"filesInDirectory"},
       key = "{#directoryInfoRequest.pathToDirectory()}")
   public Iterable<Result<Item>> getFilesInDirectory(DirectoryInfoRequest directoryInfoRequest)
       throws NoSuchDirectoryException {
@@ -209,7 +209,7 @@ public class FilesService {
   }
 
   @Cacheable(
-      cacheNames = {"receivedRootDirectories"},
+      cacheNames = {"rootDirectories"},
       key = "{#rootDirectoriesRequest.bucketName()}")
   public Iterable<Result<Item>> getRootDirectories(RootDirectoriesRequest rootDirectoriesRequest)
       throws NoSuchBucketException {
