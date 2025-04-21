@@ -73,7 +73,7 @@ public class FilesService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public void uploadFile(String bucketName, Part files)
+  public FileInfoResponse uploadFile(String bucketName, Part files)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -93,7 +93,7 @@ public class FilesService {
     if (files.getSize() > fileMemoryLimit) {
       throw new FileMemoryLimitExceededException("Files are too large: " + fileMemoryLimit);
     }
-    filesS3Repository.uploadFile(bucketName, files);
+    return filesS3Repository.uploadFile(bucketName, files);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)

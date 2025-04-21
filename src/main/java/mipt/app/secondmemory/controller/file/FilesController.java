@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface FilesController {
 
   @PostMapping("/files/upload/{bucketName}")
-  ResponseEntity<Void> uploadFiles(
+  ResponseEntity<FileInfoResponse> uploadFiles(
       @PathVariable(name = "bucketName") String bucketName, @RequestParam("file") Part file)
       throws ServerException,
           InsufficientDataException,

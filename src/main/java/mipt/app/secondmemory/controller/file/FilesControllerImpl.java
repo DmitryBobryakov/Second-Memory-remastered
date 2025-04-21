@@ -39,7 +39,7 @@ public class FilesControllerImpl implements FilesController {
   private final FilesService filesService;
 
   @Override
-  public ResponseEntity<Void> uploadFiles(String bucketName, Part file)
+  public ResponseEntity<FileInfoResponse> uploadFiles(String bucketName, Part file)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -51,8 +51,8 @@ public class FilesControllerImpl implements FilesController {
           InvalidResponseException,
           XmlParserException,
           InternalException {
-    filesService.uploadFile(bucketName, file);
-    return ResponseEntity.ok().build();
+
+    return ResponseEntity.ok(filesService.uploadFile(bucketName, file));
   }
 
   @Override

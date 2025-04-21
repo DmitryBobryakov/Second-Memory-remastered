@@ -23,7 +23,9 @@ import java.time.Instant;
 import jakarta.servlet.http.Part;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.entity.FileEntity;
+import mipt.app.secondmemory.mapper.FilesMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -61,7 +63,7 @@ public class FilesS3RepositoryImpl {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT)
-  public void uploadFile(String bucketName, Part file)
+  public FileInfoResponse uploadFile(String bucketName, Part file)
       throws IOException,
           InsufficientDataException,
           ErrorResponseException,
@@ -86,15 +88,16 @@ public class FilesS3RepositoryImpl {
     Long bucketId = bucketsRepository.findByName(bucketName); // Взять bucketId из buckets
     Long ownerId = 1L; // Надо изменить потом
     Timestamp currentTimestamp = Timestamp.from(Instant.now());
-    filesRepository.save(
-        FileEntity.builder()
+    FileEntity fileEntity =FileEntity.builder()
             .name(fileName)
             .bucketId(bucketId)
             .capacity(file.getSize())
             .creationDate(currentTimestamp)
             .lastModifiedDate(currentTimestamp)
             .ownerId(ownerId)
-            .build());
+            .build();
+    filesRepository.save(fileEntity);
+    return FilesMapper.toDto(fileEntity);
   }
 
   public void renameFile(String bucketName, String oldKey, String newKey)
