@@ -1,5 +1,6 @@
 package mipt.app.secondmemory.controller.tag;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import mipt.app.secondmemory.dto.tag.TagDto;
 import mipt.app.secondmemory.entity.TagEntity;
 import mipt.app.secondmemory.exception.tag.TagNotFoundException;
@@ -10,9 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
-@RequestMapping("/second-memory")
+@Tag(name = "Tags API", description = "Управление тегами")
 public interface TagsController {
 
   @GetMapping("/tags/get/{tagId}")

@@ -1,10 +1,10 @@
 package mipt.app.secondmemory.mapper;
 
+import lombok.experimental.UtilityClass;
 import jakarta.servlet.http.Part;
 import lombok.experimental.UtilityClass;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.entity.FileEntity;
-
 import java.sql.Timestamp;
 import java.time.Instant;
 
@@ -13,7 +13,6 @@ public class FileMapper {
   public static FileInfoResponse toFileDto(FileEntity fileEntity) {
     return FileInfoResponse.builder()
         .fileCapacity(fileEntity.getCapacity())
-        .bucketId(fileEntity.getBucketId())
         .fileName(fileEntity.getName())
         .fileLastModifiedDate(fileEntity.getLastModifiedDate())
         .fileCreationDate(fileEntity.getCreationDate())

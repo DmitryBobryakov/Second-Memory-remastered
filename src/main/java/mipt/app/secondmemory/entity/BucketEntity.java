@@ -27,8 +27,7 @@ public class BucketEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Schema(description = "Название корневой папки", example = "root/book.txt", type = "String")
-  @Column(name = "name", nullable = false, length = 50)
-  @NotNull(message = "Bucket name have to be filled")
+  @Schema(description = "Название корневой папки", example = "root", type = "String")
+  @Column(name = "name", length = 30)
   private String name;
 }

@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class MinioClientConfig {
 
   @Bean
-  public MinioClient getMinioClient(
+  public MinioClient createMinioClient(
       @Value("${mipt.app.minio.access-key}") String accessKey,
       @Value("${mipt.app.minio.secret-key}") String secretKey,
       @Value("${mipt.app.minio.endpoint}") String endpoint) {
