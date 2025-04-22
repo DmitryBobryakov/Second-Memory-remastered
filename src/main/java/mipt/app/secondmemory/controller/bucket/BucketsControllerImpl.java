@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import mipt.app.secondmemory.dto.directory.BucketDto;
 import mipt.app.secondmemory.entity.BucketEntity;
 import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
-import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.service.BucketService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +33,7 @@ public class BucketsControllerImpl implements BucketsController {
   }
 
   @Override
-  public ResponseEntity<BucketDto> createBucket(BucketEntity bucketEntity)
+  public ResponseEntity<BucketDto> createBucket(String bucketName)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -44,7 +43,7 @@ public class BucketsControllerImpl implements BucketsController {
           InvalidResponseException,
           XmlParserException,
           InternalException {
-    return ResponseEntity.ok(bucketService.createBucket(bucketEntity));
+    return ResponseEntity.ok(bucketService.createBucket(bucketName));
   }
 
   @Override
@@ -58,8 +57,7 @@ public class BucketsControllerImpl implements BucketsController {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException,
-          FileNotFoundException {
+          InternalException {
     return ResponseEntity.ok(bucketService.deleteBucket(bucketId, folderPrefix));
   }
 

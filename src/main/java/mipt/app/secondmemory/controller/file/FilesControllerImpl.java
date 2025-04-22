@@ -13,13 +13,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import jakarta.servlet.http.Part;
-
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
-
-import jakarta.servlet.http.Part;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
@@ -46,7 +40,7 @@ public class FilesControllerImpl implements FilesController {
   private final FilesService filesService;
 
   @Override
-  public ResponseEntity<FileInfoResponse> uploadFiles(String bucketName, Part file)
+  public ResponseEntity<FileInfoResponse> uploadFile(Long bucketId, Part file)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -57,9 +51,10 @@ public class FilesControllerImpl implements FilesController {
           NoSuchBucketException,
           InvalidResponseException,
           XmlParserException,
-          InternalException {
+          InternalException,
+          BucketNotFoundException {
 
-    return ResponseEntity.ok(filesService.uploadFile(bucketName, file));
+    return ResponseEntity.ok(filesService.uploadFile(bucketId, file));
   }
 
   @Override

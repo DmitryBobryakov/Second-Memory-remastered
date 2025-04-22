@@ -30,7 +30,6 @@ import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
 import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import org.springframework.http.ResponseEntity;
-import jakarta.servlet.http.Part;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -42,9 +41,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "File API", description = "Управление файлами")
 public interface FilesController {
 
-  @PostMapping("/files/upload/{bucketName}")
-  ResponseEntity<FileInfoResponse> uploadFiles(
-      @PathVariable(name = "bucketName") String bucketName, @RequestParam("file") Part file)
+  @PostMapping("/files/upload/{bucketId}")
+  ResponseEntity<FileInfoResponse> uploadFile(
+      @PathVariable(name = "bucketId") Long bucketId, @RequestParam("file") Part file)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -55,7 +54,7 @@ public interface FilesController {
           XmlParserException,
           InternalException,
           FileMemoryLimitExceededException,
-          NoSuchBucketException;
+          NoSuchBucketException, BucketNotFoundException;
 
   @PatchMapping("/files/rename/{bucketName}/{oldKey}")
   ResponseEntity<Void> renameFile(

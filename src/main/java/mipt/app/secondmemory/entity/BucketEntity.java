@@ -7,7 +7,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,4 +29,7 @@ public class BucketEntity {
   @Schema(description = "Название корневой папки", example = "root", type = "String")
   @Column(name = "name", length = 30)
   private String name;
+
+  @Column(name = "rootFolderId", length = 30)
+  private long rootFolderId;
 }

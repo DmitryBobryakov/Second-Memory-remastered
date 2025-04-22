@@ -8,7 +8,6 @@ import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import mipt.app.secondmemory.dto.directory.BucketDto;
-import mipt.app.secondmemory.entity.BucketEntity;
 import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
@@ -31,8 +29,8 @@ public interface BucketsController {
   ResponseEntity<BucketDto> getBucket(@PathVariable(value = "bucketId") Long bucketId)
       throws BucketNotFoundException;
 
-  @PostMapping("/buckets/create")
-  ResponseEntity<BucketDto> createBucket(@RequestBody BucketEntity bucketEntity)
+  @PostMapping("/buckets/create/{bucketName}")
+  ResponseEntity<BucketDto> createBucket(@PathVariable(name = "bucketName") String bucketName)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,

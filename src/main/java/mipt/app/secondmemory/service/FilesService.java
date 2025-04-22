@@ -11,24 +11,18 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.messages.Item;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
-import jakarta.servlet.http.Part;
-
-import jakarta.servlet.http.Part;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
+import mipt.app.secondmemory.entity.BucketEntity;
 import mipt.app.secondmemory.entity.FileEntity;
 import mipt.app.secondmemory.entity.FolderEntity;
 import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
@@ -87,7 +81,7 @@ public class FilesService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public FileInfoResponse uploadFile(String bucketName, Part files)
+  public FileInfoResponse uploadFile(Long bucketId, Part file)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -98,16 +92,25 @@ public class FilesService {
           XmlParserException,
           InternalException,
           FileMemoryLimitExceededException,
-          NoSuchBucketException {
+          NoSuchBucketException,
+          BucketNotFoundException {
     log.debug("Функция по загрузке файла вызвана в сервисе");
+    BucketEntity bucketEntity =
+        bucketsJpaRepository.findById(bucketId).orElseThrow(BucketNotFoundException::new);
+    String bucketName = bucketEntity.getName();
     boolean found = client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
     if (!found) {
       throw new NoSuchBucketException("Bucket does not exist with name: " + bucketName);
     }
-    if (files.getSize() > fileMemoryLimit) {
+    if (file.getSize() > fileMemoryLimit) {
       throw new FileMemoryLimitExceededException("Files are too large: " + fileMemoryLimit);
     }
-    return filesS3Repository.uploadFile(bucketName, files);
+    filesS3Repository.uploadFile(bucketName, file);
+    Long ownerId = 1L; // Надо изменить потом
+    FileEntity fileEntity =
+        FilesMapper.toFileEntity(file, ownerId, bucketId, bucketEntity.getRootFolderId());
+    filesRepository.save(fileEntity);
+    return FilesMapper.toFileDto(fileEntity);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
@@ -207,9 +210,9 @@ public class FilesService {
     filesS3Repository.uploadFileToFolder(bucketName, file, pathToFolder);
     Long ownerId = 1L; // Изменить попозже
     FileEntity fileEntity =
-        FileMapper.toFileEntity(file, ownerId, folderEntity.getBucketId(), folderId);
+        FilesMapper.toFileEntity(file, ownerId, folderEntity.getBucketId(), folderId);
     filesRepository.save(fileEntity);
-    return FileMapper.toFileDto(fileEntity);
+    return FilesMapper.toFileDto(fileEntity);
   }
 
   @Cacheable(
@@ -220,21 +223,12 @@ public class FilesService {
     log.debug("File ID: {}, User ID: {}", fileId, fileInfoRequest.userId());
     return filesRepository
         .findById(fileId)
-        .map(
-            file ->
-                new FileInfoResponse(
-                    file.getId(),
-                    file.getName(),
-                    file.getCapacity(),
-                    file.getOwnerId(),
-                    file.getCreationDate(),
-                    file.getLastModifiedDate(),
-                    file.getBucketId()))
+        .map(FilesMapper::toFileDto)
         .orElseThrow(() -> new DatabaseException("Cannot select file data from DB"));
   }
 
   public List<FileInfoResponse> searchFiles(String name) {
-    return filesRepository.findByNameLike(name).stream().map(FilesMapper::toDto).toList();
+    return filesRepository.findByNameLike(name).stream().map(FilesMapper::toFileDto).toList();
   }
 
   @Cacheable(

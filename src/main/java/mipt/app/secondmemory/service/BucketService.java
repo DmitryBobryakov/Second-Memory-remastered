@@ -42,7 +42,7 @@ public class BucketService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public BucketDto createBucket(BucketEntity bucketEntity)
+  public BucketDto createBucket(String bucketName)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -52,11 +52,13 @@ public class BucketService {
           InvalidResponseException,
           XmlParserException,
           InternalException {
-    log.debug(
-        "Функция по созданию bucket with bucketName: {} вызвана в сервисе", bucketEntity.getName());
+    log.debug("Функция по созданию bucket with bucketName: {} вызвана в сервисе", bucketName);
+    BucketEntity bucketEntity = BucketEntity.builder().name(bucketName).build();
     bucketsJpaRepository.save(bucketEntity);
     FolderEntity folderEntity =
         FolderEntity.builder().name("").bucketId(bucketEntity.getId()).parentId(null).build();
+    bucketEntity.setRootFolderId(folderEntity.getId());
+    bucketsJpaRepository.save(bucketEntity);
     foldersJpaRepository.save(folderEntity);
     bucketsS3Repository.createBucket(bucketEntity.getName());
     return BucketMapper.toBucketDto(bucketEntity);

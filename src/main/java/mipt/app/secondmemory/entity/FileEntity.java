@@ -58,12 +58,12 @@ public class FileEntity {
   @Schema(description = "Дата создания файла", type = "Timestamp")
   @Column(name = "creation_ts")
   @NotNull(message = "File creation date has to be filled")
-  private Timestamp creationDate;
+  private Timestamp creationTs;
 
   @Schema(description = "Последняя дата обновления файла", type = "Timestamp")
   @Column(name = "last_modified_ts")
   @NotNull(message = "File last modified date has to be filled")
-  private Timestamp lastModifiedDate;
+  private Timestamp lastModifiedTs;
 
   @Override
   public final boolean equals(Object o) {
@@ -98,27 +98,27 @@ public class FileEntity {
   @Override
   public String toString() {
     return getClass().getSimpleName()
-        + "("
-        + "id = "
-        + id
-        + ", "
-        + "name = "
-        + name
-        + ", "
-        + "capacity = "
-        + capacity
-        + ", "
-        + "ownerId = "
-        + ownerId
-        + ", "
-        + "creationDate = "
-        + creationDate
-        + ", "
-        + "lastModifiedDate = "
-        + lastModifiedDate
-        + ", "
-        + "bucketId = "
-        + bucketId
-        + ")";
+           + "("
+           + "id = "
+           + id
+           + ", "
+           + "name = "
+           + name
+           + ", "
+           + "capacity = "
+           + capacity
+           + ", "
+           + "ownerId = "
+           + ownerId
+           + ", "
+           + "creationDate = "
+           + creationTs
+           + ", "
+           + "lastModifiedDate = "
+           + lastModifiedTs
+           + ", "
+           + "bucketId = "
+           + bucketId
+           + ")";
   }
 }
