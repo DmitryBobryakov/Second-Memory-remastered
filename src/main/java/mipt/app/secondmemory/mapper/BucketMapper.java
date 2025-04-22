@@ -1,16 +1,16 @@
 package mipt.app.secondmemory.mapper;
 
+import lombok.experimental.UtilityClass;
 import mipt.app.secondmemory.dto.directory.BucketDto;
 import mipt.app.secondmemory.entity.BucketEntity;
-import org.springframework.stereotype.Component;
 
-@Component
+@UtilityClass
 public class BucketMapper {
-  public BucketDto toDto(BucketEntity bucketEntity) {
+  public static BucketDto toBucketDto(BucketEntity bucketEntity) {
     return BucketDto.builder().name(bucketEntity.getName()).build();
   }
 
-  public String toBucketName(BucketEntity bucketEntity) {
+  public static String toBucketName(BucketEntity bucketEntity) {
     return bucketEntity.getName();
   }
 }

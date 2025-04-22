@@ -5,7 +5,6 @@ import io.minio.MinioClient;
 import io.minio.Result;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
-import mipt.app.secondmemory.configuration.MinioClientConfig;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import org.springframework.stereotype.Repository;

@@ -10,11 +10,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.BucketDto;
 import mipt.app.secondmemory.entity.BucketEntity;
+import mipt.app.secondmemory.entity.FolderEntity;
 import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
-import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.mapper.BucketMapper;
-import mipt.app.secondmemory.repository.BucketsJpaRepository;
-import mipt.app.secondmemory.repository.BucketsS3Repository;
+import mipt.app.secondmemory.repository.bucket.BucketsJpaRepository;
+import mipt.app.secondmemory.repository.bucket.BucketsS3Repository;
+import mipt.app.secondmemory.repository.folder.FoldersJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -30,14 +31,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BucketService {
   private final BucketsJpaRepository bucketsJpaRepository;
-  private final BucketMapper bucketMapper;
   private final BucketsS3Repository bucketsS3Repository;
+  private final FoldersJpaRepository foldersJpaRepository;
 
   public BucketDto getBucket(Long bucketId) throws BucketNotFoundException {
     log.debug("Функция по взятию bucket with bucketId: {} вызвана в сервисе", bucketId);
     BucketEntity bucketEntity =
         bucketsJpaRepository.findById(bucketId).orElseThrow(BucketNotFoundException::new);
-    return bucketMapper.toDto(bucketEntity);
+    return BucketMapper.toBucketDto(bucketEntity);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
@@ -54,8 +55,11 @@ public class BucketService {
     log.debug(
         "Функция по созданию bucket with bucketName: {} вызвана в сервисе", bucketEntity.getName());
     bucketsJpaRepository.save(bucketEntity);
+    FolderEntity folderEntity =
+        FolderEntity.builder().name("").bucketId(bucketEntity.getId()).parentId(null).build();
+    foldersJpaRepository.save(folderEntity);
     bucketsS3Repository.createBucket(bucketEntity.getName());
-    return bucketMapper.toDto(bucketEntity);
+    return BucketMapper.toBucketDto(bucketEntity);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
@@ -69,8 +73,7 @@ public class BucketService {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException,
-          FileNotFoundException {
+          InternalException {
     log.debug("Функция по удалению  bucket with bucketId: {}  вызвана в сервисе", bucketId);
 
     // remove bucket from Postgresql
@@ -80,12 +83,12 @@ public class BucketService {
     bucketsJpaRepository.deleteById(bucketId);
     // remove bucket from Minio
     bucketsS3Repository.deleteBucket(bucketName, folderPrefix);
-    return bucketMapper.toDto(bucketEntity);
+    return BucketMapper.toBucketDto(bucketEntity);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
   public List<String> getAllBucketsNames() {
     log.debug("Функция по взятию всех файлов вызвана в сервисе");
-    return bucketsJpaRepository.findAll().stream().map(bucketMapper::toBucketName).toList();
+    return bucketsJpaRepository.findAll().stream().map(BucketMapper::toBucketName).toList();
   }
 }

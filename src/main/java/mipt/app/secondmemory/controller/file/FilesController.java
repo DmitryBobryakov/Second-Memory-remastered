@@ -16,10 +16,13 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+
+import jakarta.servlet.http.Part;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
+import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
@@ -117,10 +120,12 @@ public interface FilesController {
           XmlParserException,
           InternalException;
 
-  @PostMapping("/files/{bucketName}/create/folder")
-  void createFolder(
-      @PathVariable(name = "bucketName") String bucketName, @RequestParam String folderName)
-      throws ServerException,
+  @PostMapping("/files/upload/folder/{folderId}")
+  ResponseEntity<FileInfoResponse> uploadFileToFolder(
+      @PathVariable(name = "folderId") Long folderId, @RequestParam("file") Part file)
+      throws NoSuchDirectoryException,
+          BucketNotFoundException,
+          ServerException,
           InsufficientDataException,
           ErrorResponseException,
           IOException,

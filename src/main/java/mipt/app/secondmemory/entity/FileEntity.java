@@ -52,6 +52,9 @@ public class FileEntity {
   @NotNull
   private Long bucketId;
 
+  @Column(name = "folder_id")
+  private Long folderId;
+
   @Schema(description = "Дата создания файла", type = "Timestamp")
   @Column(name = "creation_date")
   @NotNull(message = "File creation date has to be filled")

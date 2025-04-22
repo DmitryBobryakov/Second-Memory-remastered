@@ -14,7 +14,6 @@ import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.http.Method;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
@@ -168,26 +167,6 @@ public class FilesS3RepositoryImpl {
     delete(oldBucketName, key);
   }
 
-  public void createFolder(String bucketName, String pathToFolder)
-      throws ServerException,
-          InsufficientDataException,
-          ErrorResponseException,
-          IOException,
-          NoSuchAlgorithmException,
-          InvalidKeyException,
-          InvalidResponseException,
-          XmlParserException,
-          InternalException {
-    log.debug(
-        "Функция по созданию папки вызвана в репозитории. Bucket: {}, folderName: {}",
-        bucketName,
-        pathToFolder);
-    client.putObject(
-        PutObjectArgs.builder().bucket(bucketName).object(pathToFolder + "/").stream(
-                new ByteArrayInputStream(new byte[] {}), 0, -1)
-            .build());
-  }
-
   public void uploadFileToFolder(String bucketName, Part file, String pathToFolder)
       throws IOException,
           ServerException,
@@ -198,12 +177,6 @@ public class FilesS3RepositoryImpl {
           InvalidResponseException,
           XmlParserException,
           InternalException {
-    log.debug(
-        "Функция по загрузке файла в папку вызвана в репозитории. Bucket: {}, fileName: {}, pathToFolder: {}",
-        bucketName,
-        file.getSubmittedFileName(),
-        pathToFolder);
-
     String fileName = file.getSubmittedFileName();
     InputStream fileInputStream = file.getInputStream();
 

@@ -1,4 +1,4 @@
-package mipt.app.secondmemory.repository;
+package mipt.app.secondmemory.repository.bucket;
 
 import io.minio.BucketExistsArgs;
 import io.minio.ListObjectsArgs;
@@ -15,8 +15,6 @@ import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
-import mipt.app.secondmemory.exception.file.FileNotFoundException;
-import mipt.app.secondmemory.service.FilesService;
 import org.springframework.stereotype.Repository;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -27,7 +25,6 @@ import java.util.ArrayList;
 @RequiredArgsConstructor
 public class BucketsS3Repository {
   private final MinioClient client;
-  private final FilesService filesService;
 
   public void createBucket(String bucketName)
       throws ServerException,
@@ -54,31 +51,26 @@ public class BucketsS3Repository {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException,
-          FileNotFoundException {
+          InternalException {
     // remove the contents from the bucket. MinIO
     ArrayList<String> filesNames = new ArrayList<>();
     for (Result<Item> result :
-        client.listObjects(
-            ListObjectsArgs.builder()
-                .bucket(bucketName)
-                .prefix(folderPrefix)
-                .recursive(true)
-                .build())) {
+        client.listObjects(ListObjectsArgs.builder().bucket(bucketName).recursive(true).build())) {
       if (result.get().objectName().equals(folderPrefix)) {
         continue;
       }
       filesNames.add(result.get().objectName());
     }
     for (String fileName : filesNames) {
-      filesService.delete(bucketName, fileName);
+
+      client.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(fileName).build());
     }
     // remove bucket from MinIO
-//    if (folderPrefix.equals("/")) {
-//      client.removeBucket(RemoveBucketArgs.builder().bucket(bucketName).build());
-//    } else {
-//      client.removeObject(
-//          RemoveObjectArgs.builder().bucket(bucketName).object(folderPrefix).build());
-//    }
+    if (folderPrefix.equals("/")) {
+      client.removeBucket(RemoveBucketArgs.builder().bucket(bucketName).build());
+    } else {
+      client.removeObject(
+          RemoveObjectArgs.builder().bucket(bucketName).object(folderPrefix).build());
+    }
   }
 }

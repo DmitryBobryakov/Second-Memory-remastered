@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+
+import jakarta.servlet.http.Part;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
+import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
@@ -73,8 +76,10 @@ public class FilesControllerImpl implements FilesController {
   }
 
   @Override
-  public void createFolder(String bucketName, String folderName)
-      throws ServerException,
+  public ResponseEntity<FileInfoResponse> uploadFileToFolder(Long folderId, Part file)
+      throws NoSuchDirectoryException,
+          BucketNotFoundException,
+          ServerException,
           InsufficientDataException,
           ErrorResponseException,
           IOException,
@@ -83,7 +88,7 @@ public class FilesControllerImpl implements FilesController {
           InvalidResponseException,
           XmlParserException,
           InternalException {
-    filesService.createFolder(bucketName, folderName);
+    return ResponseEntity.ok(filesService.uploadFileToFolder(folderId, file));
   }
 
   @Override

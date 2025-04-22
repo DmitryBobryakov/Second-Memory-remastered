@@ -14,10 +14,13 @@ import io.minio.messages.Item;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.servlet.http.Part;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
@@ -25,6 +28,8 @@ import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.entity.FileEntity;
+import mipt.app.secondmemory.entity.FolderEntity;
+import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
@@ -34,6 +39,8 @@ import mipt.app.secondmemory.mapper.FileMapper;
 import mipt.app.secondmemory.repository.DirectoriesRepository;
 import mipt.app.secondmemory.repository.FilesRepository;
 import mipt.app.secondmemory.repository.FilesS3RepositoryImpl;
+import mipt.app.secondmemory.repository.bucket.BucketsJpaRepository;
+import mipt.app.secondmemory.repository.folder.FoldersJpaRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -49,12 +56,14 @@ import org.springframework.web.servlet.ModelAndView;
 @RequiredArgsConstructor
 @Component
 public class FilesService {
+  private final FoldersJpaRepository foldersJpaRepository;
+  private final BucketsJpaRepository bucketsJpaRepository;
+
   @Value("${mipt.app.servlet.multipart.max-capacity}")
   private long maxFileSize;
 
   private final FilesS3RepositoryImpl filesS3Repository;
   private final MinioClient client;
-  private final FileMapper fileMapper;
   private final FilesRepository filesRepository;
   private final DirectoriesRepository directoriesRepository;
 
@@ -184,8 +193,10 @@ public class FilesService {
     filesS3Repository.moveBetweenBuckets(oldBucketName, newBucketName, key);
   }
 
-  public void createFolder(String bucketName, String folderName)
-      throws ServerException,
+  public FileInfoResponse uploadFileToFolder(Long folderId, Part file)
+      throws NoSuchDirectoryException,
+          BucketNotFoundException,
+          ServerException,
           InsufficientDataException,
           ErrorResponseException,
           IOException,
@@ -194,10 +205,21 @@ public class FilesService {
           InvalidResponseException,
           XmlParserException,
           InternalException {
-    filesS3Repository.createFolder(bucketName, folderName);
+    FolderEntity folderEntity =
+        foldersJpaRepository.findById(folderId).orElseThrow(NoSuchDirectoryException::new);
+    String pathToFolder = foldersJpaRepository.takePathToFolder(folderId);
+    String bucketName =
+        bucketsJpaRepository
+            .findById(folderEntity.getBucketId())
+            .orElseThrow(BucketNotFoundException::new)
+            .getName();
+    filesS3Repository.uploadFileToFolder(bucketName, file, pathToFolder);
+    Long ownerId = 1L; // Изменить попозже
+    FileEntity fileEntity =
+        FileMapper.toFileEntity(file, ownerId, folderEntity.getBucketId(), folderId);
+    filesRepository.save(fileEntity);
+    return FileMapper.toFileDto(fileEntity);
   }
-
-
 
   @Cacheable(
       cacheNames = {"receivedFileInfo"},
@@ -226,7 +248,7 @@ public class FilesService {
     List<FileEntity> files = filesRepository.findByNameLike(name);
     List<FileInfoResponse> resultFiles = new ArrayList<>();
     for (FileEntity file : files) {
-      resultFiles.add(fileMapper.toDto(file));
+      resultFiles.add(FileMapper.toFileDto(file));
     }
     return resultFiles;
   }

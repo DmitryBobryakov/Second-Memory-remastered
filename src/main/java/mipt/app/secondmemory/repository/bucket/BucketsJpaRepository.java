@@ -1,4 +1,4 @@
-package mipt.app.secondmemory.repository;
+package mipt.app.secondmemory.repository.bucket;
 
 import mipt.app.secondmemory.entity.BucketEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
