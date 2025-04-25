@@ -45,10 +45,10 @@ public class UsersControllerImpl implements UsersController {
   public ResponseEntity<String> authenticateUser(
       AuthUserRequest userDto, HttpServletResponse response)
       throws UserNotFoundException, AuthenticationDataMismatchException, JsonProcessingException {
-    log.info(
+    log.debug(
         "UsersController -> authenticate() -> Accepted request with email {}", userDto.getEmail());
     User user = usersService.authenticate(userDto);
-    log.info(
+    log.debug(
         "UsersController -> authenticate() -> Successfully authenticated with email {}",
         userDto.getEmail());
 
@@ -82,10 +82,10 @@ public class UsersControllerImpl implements UsersController {
   @PostMapping("/sign-up")
   public ResponseEntity<RegisterUserResponse> registerUser(User user)
       throws JsonProcessingException {
-    log.info(
+    log.debug(
         "UsersController -> registerUser() -> Accepted request with email {}", user.getEmail());
     usersService.create(user);
-    log.info(
+    log.debug(
         "UsersController -> registerUser() -> Successfully registered with email {}",
         user.getEmail());
 
@@ -99,7 +99,7 @@ public class UsersControllerImpl implements UsersController {
   @PatchMapping("/update")
   public ResponseEntity<String> updateUser(User user, String cookieValue)
       throws UserNotFoundException {
-    log.info("UsersController -> updateUser() -> Accepted request with email {}", user.getEmail());
+    log.debug("UsersController -> updateUser() -> Accepted request with email {}", user.getEmail());
 
     Session session = sessionsRepository.findByUserId(user.getId()).orElseThrow();
     if (session.getCookie().equals(cookieValue)) {
@@ -108,7 +108,7 @@ public class UsersControllerImpl implements UsersController {
       return ResponseEntity.status(401).body("Try to authenticate first");
     }
 
-    log.info(
+    log.debug(
         "UsersController -> updateUser() -> Successfully updated user with email {}",
         user.getEmail());
 
@@ -119,7 +119,7 @@ public class UsersControllerImpl implements UsersController {
   @DeleteMapping("/delete")
   public ResponseEntity<String> deleteUser(String email, String cookieValue)
       throws UserNotFoundException, JsonProcessingException {
-    log.info("UsersController -> deleteUser() -> Accepted request with email {}", email);
+    log.debug("UsersController -> deleteUser() -> Accepted request with email {}", email);
 
     User user = usersRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
     Session session = sessionsRepository.findByUserId(user.getId()).orElseThrow();
@@ -129,7 +129,7 @@ public class UsersControllerImpl implements UsersController {
       return ResponseEntity.status(401).body("Try to authenticate first");
     }
 
-    log.info("UsersController -> deleteUser() -> Successfully deleted user with email {}", email);
+    log.debug("UsersController -> deleteUser() -> Successfully deleted user with email {}", email);
 
     producerService.sendMessage(new MessageDto(email, user.getName(), MessageType.DELETION));
 
@@ -140,7 +140,7 @@ public class UsersControllerImpl implements UsersController {
   @PostMapping("/logout")
   public ResponseEntity<String> logOut(String requestUuid, HttpServletResponse response)
       throws UserNotFoundException {
-    log.info("UsersController -> logOut() -> Accepted request user with uuid {}", requestUuid);
+    log.debug("UsersController -> logOut() -> Accepted request user with uuid {}", requestUuid);
     Long uuid = Long.parseLong(requestUuid);
     Session session = sessionsRepository.findByUserId(uuid).orElseThrow(UserNotFoundException::new);
     sessionsRepository.delete(session);
@@ -152,7 +152,7 @@ public class UsersControllerImpl implements UsersController {
     cookie.setPath("/");
     response.addCookie(cookie);
 
-    log.info("UsersController -> logOut() -> Successfully logged out user with uuid {}", uuid);
+    log.debug("UsersController -> logOut() -> Successfully logged out user with uuid {}", uuid);
 
     return ResponseEntity.ok("You have successfully log out. See you soon!");
   }

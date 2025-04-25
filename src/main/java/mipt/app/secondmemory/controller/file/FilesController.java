@@ -44,7 +44,9 @@ public interface FilesController {
 
   @PostMapping("/files/upload/{bucketId}")
   ResponseEntity<FileInfoResponse> uploadFile(
-      @PathVariable(name = "bucketId") Long bucketId, @RequestParam("file") Part file)
+      @PathVariable(name = "bucketId") Long bucketId,
+      @RequestParam("file") Part file,
+      @CookieValue("token") String cookieValue)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -56,7 +58,8 @@ public interface FilesController {
           InternalException,
           FileMemoryLimitExceededException,
           NoSuchBucketException,
-          BucketNotFoundException;
+          BucketNotFoundException,
+          SessionNotFoundException;
 
   @PatchMapping("/files/rename/{bucketName}/{oldKey}")
   ResponseEntity<Void> renameFile(

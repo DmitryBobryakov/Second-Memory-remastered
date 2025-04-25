@@ -52,7 +52,7 @@ public class FilesControllerImpl implements FilesController {
   private final SessionsRepository sessionsRepository;
 
   @Override
-  public ResponseEntity<FileInfoResponse> uploadFile(Long bucketId, Part file)
+  public ResponseEntity<FileInfoResponse> uploadFile(Long bucketId, Part file, String cookieValue)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -64,9 +64,11 @@ public class FilesControllerImpl implements FilesController {
           InvalidResponseException,
           XmlParserException,
           InternalException,
-          BucketNotFoundException {
-
-    return ResponseEntity.ok(filesService.uploadFile(bucketId, file));
+          BucketNotFoundException,
+          SessionNotFoundException {
+    Session session =
+        sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
+    return ResponseEntity.ok(filesService.uploadFile(bucketId, file, session.getUser()));
   }
 
   @Override

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.role.RoleDto;
 import mipt.app.secondmemory.entity.FileEntity;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
+import mipt.app.secondmemory.exception.session.SessionNotFoundException;
 import mipt.app.secondmemory.exception.user.UserNotFoundException;
 import mipt.app.secondmemory.repository.FilesRepository;
 import mipt.app.secondmemory.service.UsersService;
@@ -25,14 +26,14 @@ public class RolesControllerImpl implements RolesController {
 
   @Override
   @PostMapping("/creation")
-  public ResponseEntity<String> addRole(RoleDto roleDto)
-      throws UserNotFoundException, FileNotFoundException {
+  public ResponseEntity<String> addRole(RoleDto roleDto, String cookieValue)
+      throws UserNotFoundException, FileNotFoundException, SessionNotFoundException {
     log.info(
         "UsersController -> addRole() -> Accepted request for adding role {} to user",
         roleDto.Role());
     FileEntity file =
         filesRepository.findById(roleDto.fileId()).orElseThrow(FileNotFoundException::new);
-    usersService.addRole(roleDto.email(), file, roleDto.Role());
+    usersService.addRole(roleDto.email(), file, roleDto.Role(), cookieValue);
     return ResponseEntity.status(CREATED)
         .body(
             String.format(
@@ -41,11 +42,12 @@ public class RolesControllerImpl implements RolesController {
 
   @Override
   @PostMapping("/deletion")
-  public ResponseEntity<String> removeRole(RoleDto roleDto) throws UserNotFoundException {
+  public ResponseEntity<String> removeRole(RoleDto roleDto, String cookieValue)
+      throws UserNotFoundException, SessionNotFoundException {
     log.info(
         "UsersController -> removeRole() -> Accepted request for removing role {} to user",
         roleDto.Role());
-    usersService.removeRole(roleDto.email(), roleDto.fileId());
+    usersService.removeRole(roleDto.email(), roleDto.fileId(), cookieValue);
     return ResponseEntity.ok()
         .body(
             String.format(
