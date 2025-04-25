@@ -11,4 +11,5 @@ public record FileInfoResponse(
     Long fileOwnerId,
     Timestamp fileCreationDate,
     Timestamp fileLastModifiedDate,
-    Long bucketId) {}
+    Long bucketId,
+    Long folderId) {}

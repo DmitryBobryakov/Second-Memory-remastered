@@ -58,12 +58,12 @@ springdoc:
 mipt:
   app:
     servlet:
-      multipart:
-        max-capacity: 10485760
+      part:
+        file_max_size: 10485760
     minio:
-      endpoint: http://localhost:9000
-      access-key: miniominio
-      secret-key: miniominio
+      endpoint: "http://localhost:9000"
+      access-key: "miniominio"
+      secret-key: "miniominio"
     caffeine_cache:
       expiration_time: 120
       max_weight: 2048

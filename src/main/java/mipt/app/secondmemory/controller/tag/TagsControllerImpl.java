@@ -7,11 +7,13 @@ import mipt.app.secondmemory.entity.TagEntity;
 import mipt.app.secondmemory.exception.tag.TagNotFoundException;
 import mipt.app.secondmemory.service.TagsService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
+@RequestMapping("/api/v1")
 public class TagsControllerImpl implements TagsController {
   private final TagsService tagsService;
 

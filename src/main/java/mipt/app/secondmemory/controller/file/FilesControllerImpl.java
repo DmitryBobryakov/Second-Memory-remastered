@@ -12,12 +12,12 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.messages.Item;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
@@ -25,9 +25,12 @@ import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.entity.Role;
 import mipt.app.secondmemory.entity.Session;
+import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
+import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
+import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.exception.role.NoRoleFoundException;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
@@ -38,7 +41,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @Slf4j
@@ -50,14 +52,25 @@ public class FilesControllerImpl implements FilesController {
   private final SessionsRepository sessionsRepository;
 
   @Override
-  @SneakyThrows
-  public ResponseEntity<Void> uploadSingle(String bucketName, MultipartFile file) {
-    filesService.uploadSingle(bucketName, file);
-    return ResponseEntity.ok().build();
+  public ResponseEntity<FileInfoResponse> uploadFile(Long bucketId, Part file)
+      throws ServerException,
+          InsufficientDataException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          FileMemoryLimitExceededException,
+          InvalidKeyException,
+          NoSuchBucketException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException,
+          BucketNotFoundException {
+
+    return ResponseEntity.ok(filesService.uploadFile(bucketId, file));
   }
 
   @Override
-  public ResponseEntity<Void> rename(
+  public ResponseEntity<Void> renameFile(
       String bucketName, Long fileId, String oldKey, String newKey, String cookieValue)
       throws ServerException,
           InsufficientDataException,
@@ -79,14 +92,24 @@ public class FilesControllerImpl implements FilesController {
     if (userRole.getType() != WRITER && userRole.getType() != OWNER) {
       throw new AuthorizationDeniedException("You don't have permission to rename file");
     }
-    filesService.rename(bucketName, oldKey, newKey);
+    filesService.renameFile(bucketName, oldKey, newKey);
     return ResponseEntity.ok().build();
   }
 
   @Override
-  @SneakyThrows
-  public ResponseEntity<Void> delete(
-      String bucketName, Long fileId, String key, String cookieValue) {
+  public ResponseEntity<Void> deleteFile(
+      String bucketName, Long fileId, String key, String cookieValue)
+      throws ServerException,
+          InsufficientDataException,
+          FileNotFoundException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException,
+          SessionNotFoundException {
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
     Role userRole =
@@ -96,19 +119,32 @@ public class FilesControllerImpl implements FilesController {
     if (userRole.getType() != OWNER) {
       throw new AuthorizationDeniedException("You don't have permission to delete file");
     }
-    filesService.delete(bucketName, key);
+    filesService.deleteFile(bucketName, key);
     return ResponseEntity.ok().build();
   }
 
   @Override
-  @SneakyThrows
-  public ResponseEntity<Void> moveInBucket(
-      String bucketName,
-      Long fileId,
+  public ResponseEntity<Void> moveFile(
+      String oldBucketName,
+      String newBucketName,
       String fileName,
       String oldPath,
       String newPath,
-      String cookieValue) {
+      Long fileId,
+      String cookieValue)
+      throws ServerException,
+          InsufficientDataException,
+          FileNotFoundException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException,
+          FileAlreadyExistsException,
+          NoSuchBucketException,
+          SessionNotFoundException {
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
     Role userRole =
@@ -118,16 +154,24 @@ public class FilesControllerImpl implements FilesController {
     if (userRole.getType() != OWNER) {
       throw new AuthorizationDeniedException("You don't have permission to move file");
     }
-    filesService.moveInBucket(bucketName, fileName, oldPath, newPath);
+    filesService.moveFile(oldBucketName, newBucketName, fileName, oldPath, newPath);
     return ResponseEntity.ok().build();
   }
 
   @Override
-  @SneakyThrows
-  public ResponseEntity<Void> moveBetweenBuckets(
-      String oldBucketName, String newBucketName, String key) {
-    filesService.moveBetweenBuckets(oldBucketName, newBucketName, key);
-    return ResponseEntity.ok().build();
+  public ResponseEntity<FileInfoResponse> uploadFileToFolder(Long folderId, Part file)
+      throws NoSuchDirectoryException,
+          BucketNotFoundException,
+          ServerException,
+          InsufficientDataException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException {
+    return ResponseEntity.ok(filesService.uploadFileToFolder(folderId, file));
   }
 
   @Override

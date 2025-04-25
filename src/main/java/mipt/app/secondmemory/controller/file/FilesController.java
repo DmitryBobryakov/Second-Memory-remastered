@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -20,12 +21,13 @@ import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
+import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
-import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
+import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
+import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
-import mipt.app.secondmemory.exception.file.FileServerException;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -36,15 +38,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "File API", description = "Управление файлами")
 public interface FilesController {
 
-  @PostMapping("/files/upload/{bucketName}")
-  ResponseEntity<Void> uploadSingle(
-      @PathVariable(name = "bucketName") String bucketName,
-      @RequestParam("file") MultipartFile file)
+  @PostMapping("/files/upload/{bucketId}")
+  ResponseEntity<FileInfoResponse> uploadFile(
+      @PathVariable(name = "bucketId") Long bucketId, @RequestParam("file") Part file)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -54,11 +54,12 @@ public interface FilesController {
           InvalidResponseException,
           XmlParserException,
           InternalException,
-          FileMemoryOverflowException,
-          FileServerException;
+          FileMemoryLimitExceededException,
+          NoSuchBucketException,
+          BucketNotFoundException;
 
   @PatchMapping("/files/rename/{bucketName}/{oldKey}")
-  ResponseEntity<Void> rename(
+  ResponseEntity<Void> renameFile(
       @PathVariable(name = "bucketName") String bucketName,
       @RequestBody Long fileId,
       @PathVariable(name = "oldKey") String oldKey,
@@ -73,12 +74,11 @@ public interface FilesController {
           InvalidResponseException,
           XmlParserException,
           InternalException,
-          FileServerException,
           FileNotFoundException,
           SessionNotFoundException;
 
   @DeleteMapping("/files/delete/{bucketName}/{key}")
-  ResponseEntity<Void> delete(
+  ResponseEntity<Void> deleteFile(
       @PathVariable(name = "bucketName") String bucketName,
       @RequestBody Long fileId,
       @PathVariable(name = "key") String key,
@@ -91,15 +91,18 @@ public interface FilesController {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException;
+          InternalException,
+          FileNotFoundException,
+          SessionNotFoundException;
 
-  @PostMapping("/files/moveInBucket/{bucketName}/{fileName}")
-  ResponseEntity<Void> moveInBucket(
-      @PathVariable(name = "bucketName") String bucketName,
+  @PostMapping("/files/move/{oldBucketName}/{newBucketName}")
+  ResponseEntity<Void> moveFile(
+      @PathVariable(name = "oldBucketName") String oldBucketName,
+      @PathVariable(name = "newBucketName") String newBucketName,
+      @RequestParam(name = "fileName") String fileName,
+      @RequestParam(name = "oldPath") String oldPath,
+      @RequestParam(name = "newPath") String newPath,
       @RequestBody Long fileId,
-      @PathVariable(name = "fileName") String fileName,
-      @RequestParam String oldPath,
-      @RequestParam String newPath,
       @CookieValue("token") String cookieValue)
       throws ServerException,
           InsufficientDataException,
@@ -109,14 +112,18 @@ public interface FilesController {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException;
+          InternalException,
+          FileNotFoundException,
+          FileAlreadyExistsException,
+          NoSuchBucketException,
+          SessionNotFoundException;
 
-  @PostMapping("/files/moveInBucket/{oldBucketName}/{newBucketName}")
-  ResponseEntity<Void> moveBetweenBuckets(
-      @PathVariable(name = "oldBucketName") String oldBucketName,
-      @PathVariable(name = "newBucketName") String newBucketName,
-      @RequestParam String key)
-      throws ServerException,
+  @PostMapping("/files/upload/folder/{folderId}")
+  ResponseEntity<FileInfoResponse> uploadFileToFolder(
+      @PathVariable(name = "folderId") Long folderId, @RequestParam("file") Part file)
+      throws NoSuchDirectoryException,
+          BucketNotFoundException,
+          ServerException,
           InsufficientDataException,
           ErrorResponseException,
           IOException,

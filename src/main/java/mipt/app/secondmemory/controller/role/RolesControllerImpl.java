@@ -30,14 +30,6 @@ public class RolesControllerImpl implements RolesController {
     log.info(
         "UsersController -> addRole() -> Accepted request for adding role {} to user",
         roleDto.Role());
-    FileEntity testFile = new FileEntity();
-    testFile.setBucketId(12L);
-    testFile.setOwnerId(2L);
-    testFile.setName("Get");
-    testFile.setCapacity(12);
-    testFile.setCreationDate(null);
-    testFile.setLastModifiedDate(null);
-    filesRepository.save(testFile);
     FileEntity file =
         filesRepository.findById(roleDto.fileId()).orElseThrow(FileNotFoundException::new);
     usersService.addRole(roleDto.email(), file, roleDto.Role());

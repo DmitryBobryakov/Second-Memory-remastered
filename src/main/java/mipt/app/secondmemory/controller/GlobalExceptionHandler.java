@@ -3,9 +3,9 @@ package mipt.app.secondmemory.controller;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
-import mipt.app.secondmemory.exception.file.FileMemoryOverflowException;
+import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
+import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
-import mipt.app.secondmemory.exception.file.FileServerException;
 import mipt.app.secondmemory.exception.role.NoRoleFoundException;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
 import mipt.app.secondmemory.exception.tag.TagNotFoundException;
@@ -34,19 +34,15 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
   }
 
-  @ExceptionHandler(FileMemoryOverflowException.class)
-  public ResponseEntity<String> handleFileMemoryOverflow(FileMemoryOverflowException exception) {
+  @ExceptionHandler(FileMemoryLimitExceededException.class)
+  public ResponseEntity<String> handleFileMemoryLimitExceededException(
+      FileMemoryLimitExceededException exception) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
   }
 
   @ExceptionHandler(TagNotFoundException.class)
   public ResponseEntity<String> handleTagMismatch(TagNotFoundException exception) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-  }
-
-  @ExceptionHandler(FileServerException.class)
-  public ResponseEntity<String> handleFileNotSuccessUpload(FileServerException exception) {
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
   }
 
   @ExceptionHandler(FileNotFoundException.class)
@@ -69,13 +65,19 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
   }
 
-  @ExceptionHandler(NoRoleFoundException.class)
-  public ResponseEntity<String> handleNoRoleFoundException(NoRoleFoundException exception) {
+  @ExceptionHandler(SessionNotFoundException.class)
+  public ResponseEntity<String> handleSessionNotFoundException(SessionNotFoundException exception) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
   }
 
-  @ExceptionHandler(SessionNotFoundException.class)
-  public ResponseEntity<String> handleNoRoleFoundException(SessionNotFoundException exception) {
+  @ExceptionHandler(FileAlreadyExistsException.class)
+  public ResponseEntity<String> handleFileAlreadyExistsException(
+      FileAlreadyExistsException exception) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+  }
+
+  @ExceptionHandler(NoRoleFoundException.class)
+  public ResponseEntity<String> handleNoRoleFoundException(NoRoleFoundException exception) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
   }
 }
