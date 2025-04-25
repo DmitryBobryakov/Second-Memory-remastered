@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
 public class UsersControllerImpl implements UsersController {
-  private final FilesRepository filesRepository;
   private final UsersRepository usersRepository;
   private final UsersService usersService;
   private final SessionsRepository sessionsRepository;
