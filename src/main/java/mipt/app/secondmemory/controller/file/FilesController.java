@@ -54,45 +54,13 @@ public interface FilesController {
           XmlParserException,
           InternalException,
           FileMemoryLimitExceededException,
-          NoSuchBucketException, BucketNotFoundException;
+          NoSuchBucketException,
+          BucketNotFoundException;
 
-  @PatchMapping("/files/rename/{bucketName}/{oldKey}")
-  ResponseEntity<Void> renameFile(
-      @PathVariable(name = "bucketName") String bucketName,
-      @PathVariable(name = "oldKey") String oldKey,
-      @RequestParam(name = "newKey") String newKey)
-      throws ServerException,
-          InsufficientDataException,
-          ErrorResponseException,
-          IOException,
-          NoSuchAlgorithmException,
-          InvalidKeyException,
-          InvalidResponseException,
-          XmlParserException,
-          InternalException,
-          FileNotFoundException;
-
-  @DeleteMapping("/files/delete/{bucketName}/{key}")
-  ResponseEntity<Void> deleteFile(
-      @PathVariable(name = "bucketName") String bucketName, @PathVariable(name = "key") String key)
-      throws ServerException,
-          InsufficientDataException,
-          ErrorResponseException,
-          IOException,
-          NoSuchAlgorithmException,
-          InvalidKeyException,
-          InvalidResponseException,
-          XmlParserException,
-          InternalException,
-          FileNotFoundException;
-
-  @PostMapping("/files/move/{oldBucketName}/{newBucketName}")
-  ResponseEntity<Void> moveFile(
-      @PathVariable(name = "oldBucketName") String oldBucketName,
-      @PathVariable(name = "newBucketName") String newBucketName,
-      @RequestParam(name = "fileName") String fileName,
-      @RequestParam(name = "oldPath") String oldPath,
-      @RequestParam(name = "newPath") String newPath)
+  @PatchMapping("/files/rename/{fileId}")
+  ResponseEntity<FileInfoResponse> renameFile(
+      @PathVariable(name = "fileId") Long fileId,
+      @RequestParam(name = "newFileName") String newFileName)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -103,8 +71,41 @@ public interface FilesController {
           XmlParserException,
           InternalException,
           FileNotFoundException,
+          NoSuchDirectoryException,
+          BucketNotFoundException;
+
+  @DeleteMapping("/files/delete")
+  ResponseEntity<FileInfoResponse> deleteFile(@RequestParam(name = "fileId") Long fileId)
+      throws ServerException,
+          InsufficientDataException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException,
+          FileNotFoundException,
+          NoSuchDirectoryException,
+          BucketNotFoundException;
+
+  @PostMapping("/files/move/")
+  ResponseEntity<FileInfoResponse> moveFile(
+      @RequestParam(name = "fileId") Long fileId, @RequestParam(name = "folderId") Long folderId)
+      throws ServerException,
+          InsufficientDataException,
+          FileNotFoundException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException,
           FileAlreadyExistsException,
-          NoSuchBucketException;
+          NoSuchBucketException,
+          NoSuchDirectoryException,
+          BucketNotFoundException;
 
   @PostMapping("/files/upload/folder/{folderId}")
   ResponseEntity<FileInfoResponse> uploadFileToFolder(

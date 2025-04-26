@@ -50,7 +50,7 @@ import org.springframework.web.servlet.ModelAndView;
 @Slf4j
 @RequiredArgsConstructor
 public class FilesService {
-  @Value("${mipt.app.servlet.part.file_max_size}")
+  @Value("${mipt.app.servlet.part.file-memory-limit}")
   private long fileMemoryLimit;
 
   private final FoldersJpaRepository foldersJpaRepository;
@@ -113,8 +113,8 @@ public class FilesService {
     return FilesMapper.toFileDto(fileEntity);
   }
 
-  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
-  public void renameFile(String bucketName, String oldKey, String newKey)
+  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+  public FileInfoResponse renameFile(Long fileId, String newFileName)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -124,20 +124,41 @@ public class FilesService {
           InvalidResponseException,
           XmlParserException,
           InternalException,
-          FileNotFoundException {
+          FileNotFoundException,
+          BucketNotFoundException,
+          NoSuchDirectoryException {
     log.debug("Функция по переименованию файла вызвана в сервисе");
-    if (oldKey.equals(newKey)) {
-      return;
+    FileEntity fileEntity =
+        filesRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
+    BucketEntity bucketEntity =
+        bucketsJpaRepository
+            .findById(fileEntity.getBucketId())
+            .orElseThrow(BucketNotFoundException::new);
+    FolderEntity folderEntity =
+        foldersJpaRepository
+            .findById(fileEntity.getFolderId())
+            .orElseThrow(NoSuchDirectoryException::new);
+    String pathToFolder =
+        "%s/".formatted(foldersJpaRepository.takePathToFolder(folderEntity.getId()));
+    String bucketName = bucketEntity.getName();
+    String fileName = fileEntity.getName();
+    if (fileName.equals(newFileName)) {
+      return FilesMapper.toFileDto(fileEntity);
     }
+    String oldKey = pathToFolder + fileName;
+    String newKey = pathToFolder + newFileName;
     if (!checkFileExists(bucketName, oldKey)) {
       throw new FileNotFoundException(
-          "File does not exist on the way: " + bucketName + "/" + oldKey);
+          "File does not exist on the way: " + bucketName + pathToFolder);
     }
     filesS3Repository.renameFile(bucketName, oldKey, newKey);
+    fileEntity.setName(newFileName);
+    filesRepository.save(fileEntity);
+    return FilesMapper.toFileDto(fileEntity);
   }
 
-  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
-  public void deleteFile(String bucketName, String key)
+  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+  public FileInfoResponse deleteFile(Long fileId)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -147,16 +168,34 @@ public class FilesService {
           InvalidResponseException,
           XmlParserException,
           InternalException,
-          FileNotFoundException {
-    log.debug("Функция по удалению файла вызвана в сервисе");
+          FileNotFoundException,
+          BucketNotFoundException,
+          NoSuchDirectoryException {
+    log.debug("Функция по удалению файла вызвана в сервисе. FileId: {}", fileId);
+    FileEntity fileEntity =
+        filesRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
+    BucketEntity bucketEntity =
+        bucketsJpaRepository
+            .findById(fileEntity.getBucketId())
+            .orElseThrow(BucketNotFoundException::new);
+    FolderEntity folderEntity =
+        foldersJpaRepository
+            .findById(fileEntity.getFolderId())
+            .orElseThrow(NoSuchDirectoryException::new);
+    String pathToFolder =
+        "%s/".formatted(foldersJpaRepository.takePathToFolder(folderEntity.getId()));
+    String bucketName = bucketEntity.getName();
+    String key = pathToFolder + fileEntity.getName();
     if (!checkFileExists(bucketName, key)) {
       throw new FileNotFoundException("File does not exist on the way: " + bucketName + "/" + key);
     }
     filesS3Repository.deleteFile(bucketName, key);
+    filesRepository.delete(fileEntity);
+    return FilesMapper.toFileDto(fileEntity);
   }
 
-  public void moveFile(
-      String oldBucketName, String newBucketName, String fileName, String oldPath, String newPath)
+  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+  public FileInfoResponse moveFile(Long fileId, Long folderId)
       throws FileNotFoundException,
           ServerException,
           InsufficientDataException,
@@ -168,13 +207,40 @@ public class FilesService {
           XmlParserException,
           InternalException,
           FileAlreadyExistsException,
-          NoSuchBucketException {
+          NoSuchBucketException,
+          NoSuchDirectoryException,
+          BucketNotFoundException {
     log.debug("Функция по перемещению файла внутри бакета вызвана в репозитории");
-    String oldKey = oldPath + "/" + fileName;
-    String newKey = newPath + "/" + fileName;
+    FileEntity fileEntity =
+        filesRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
+    FolderEntity currentFolderEntity =
+        foldersJpaRepository
+            .findById(fileEntity.getFolderId())
+            .orElseThrow(NoSuchDirectoryException::new);
+    FolderEntity newFolderEntity =
+        foldersJpaRepository.findById(folderId).orElseThrow(NoSuchDirectoryException::new);
+    BucketEntity currentBucketEntity =
+        bucketsJpaRepository
+            .findById(fileEntity.getBucketId())
+            .orElseThrow(BucketNotFoundException::new);
+    BucketEntity newBucketEntity =
+        bucketsJpaRepository
+            .findById(newFolderEntity.getBucketId())
+            .orElseThrow(BucketNotFoundException::new);
+    String oldKey =
+        "%s/%s"
+            .formatted(
+                foldersJpaRepository.takePathToFolder(currentFolderEntity.getId()),
+                fileEntity.getName());
+    String newKey =
+        "%s/%s".formatted(foldersJpaRepository.takePathToFolder(folderId), fileEntity.getName());
+    String oldBucketName = currentBucketEntity.getName();
+    String newBucketName = newBucketEntity.getName();
+    String oldPath = foldersJpaRepository.takePathToFolder(currentFolderEntity.getId());
+    String newPath = foldersJpaRepository.takePathToFolder(newFolderEntity.getId());
+    String fileName = fileEntity.getName();
     if (!checkFileExists(oldBucketName, oldKey)) {
-      throw new FileNotFoundException(
-          "File does not exist on the way: " + oldBucketName + "/" + oldKey);
+      throw new FileNotFoundException("File does not exist on the way: " + oldBucketName + oldKey);
     }
     boolean found = client.bucketExists(BucketExistsArgs.builder().bucket(newBucketName).build());
     if (!found) {
@@ -182,9 +248,13 @@ public class FilesService {
     }
     if (checkFileExists(newBucketName, newKey)) {
       throw new FileAlreadyExistsException(
-          "File already exists on the way: " + newBucketName + "/" + newKey);
+          "File already exists on the way: " + newBucketName + newKey);
     }
     filesS3Repository.moveFile(oldBucketName, newBucketName, fileName, oldPath, newPath);
+    fileEntity.setBucketId(newBucketEntity.getId());
+    fileEntity.setFolderId(newFolderEntity.getId());
+    filesRepository.save(fileEntity);
+    return FilesMapper.toFileDto(fileEntity);
   }
 
   public FileInfoResponse uploadFileToFolder(Long folderId, Part file)

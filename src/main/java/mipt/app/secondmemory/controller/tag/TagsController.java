@@ -1,32 +1,39 @@
 package mipt.app.secondmemory.controller.tag;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import mipt.app.secondmemory.dto.tag.FileTagDto;
 import mipt.app.secondmemory.dto.tag.TagDto;
-import mipt.app.secondmemory.entity.TagEntity;
+import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.exception.tag.TagNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 @Tag(name = "Tags API", description = "Управление тегами")
 public interface TagsController {
 
   @GetMapping("/tags/get/{tagId}")
-  ResponseEntity<TagDto> get(@PathVariable(name = "tagId") Long tagId) throws TagNotFoundException;
-
-  @DeleteMapping("/tags/delete/{tagId}")
-  ResponseEntity<TagDto> delete(@PathVariable(name = "tagId") Long tagId)
+  ResponseEntity<TagDto> getTag(@PathVariable(name = "tagId") Long tagId)
       throws TagNotFoundException;
 
-  @PutMapping("/tags/put/{tagId}")
-  ResponseEntity<TagDto> rename(
-      @PathVariable(name = "tagId") Long tagId, @RequestBody TagEntity newTagEntity)
-      throws TagNotFoundException;
+  @DeleteMapping("/tags/delete/by/file/")
+  ResponseEntity<FileTagDto> deleteTagByFile(
+      @RequestParam(name = "tagId") Long tagId, @RequestParam(name = "fileId") Long fileId)
+      throws TagNotFoundException, FileNotFoundException;
 
   @PostMapping("/tags/create")
-  ResponseEntity<TagDto> create(@RequestBody TagEntity tagEntity);
+  ResponseEntity<TagDto> createTag(@RequestParam(name = "name") String name);
+
+  @PostMapping("/tags/add/tag/to/file")
+  ResponseEntity<FileTagDto> addTagToFile(
+      @RequestParam(name = "tagId") Long tagId, @RequestParam(name = "fileId") Long fileId)
+      throws TagNotFoundException, FileNotFoundException;
+
+  @PostMapping("/tags/get/all/by/file")
+  ResponseEntity<List<TagDto>> getAllTagsByFile(@RequestParam(name = "fileId") Long fileId);
 }

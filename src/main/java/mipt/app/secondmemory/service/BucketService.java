@@ -57,14 +57,14 @@ public class BucketService {
     bucketsJpaRepository.save(bucketEntity);
     FolderEntity folderEntity =
         FolderEntity.builder().name("").bucketId(bucketEntity.getId()).parentId(null).build();
+    foldersJpaRepository.save(folderEntity);
     bucketEntity.setRootFolderId(folderEntity.getId());
     bucketsJpaRepository.save(bucketEntity);
-    foldersJpaRepository.save(folderEntity);
     bucketsS3Repository.createBucket(bucketEntity.getName());
     return BucketMapper.toBucketDto(bucketEntity);
   }
 
-  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
+  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
   public BucketDto deleteBucket(Long bucketId, String folderPrefix)
       throws BucketNotFoundException,
           ServerException,
@@ -77,18 +77,15 @@ public class BucketService {
           XmlParserException,
           InternalException {
     log.debug("Функция по удалению  bucket with bucketId: {}  вызвана в сервисе", bucketId);
-
-    // remove bucket from Postgresql
     BucketEntity bucketEntity =
         bucketsJpaRepository.findById(bucketId).orElseThrow(BucketNotFoundException::new);
     String bucketName = bucketEntity.getName();
     bucketsJpaRepository.deleteById(bucketId);
-    // remove bucket from Minio
     bucketsS3Repository.deleteBucket(bucketName, folderPrefix);
     return BucketMapper.toBucketDto(bucketEntity);
   }
 
-  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
+  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
   public List<String> getAllBucketsNames() {
     log.debug("Функция по взятию всех файлов вызвана в сервисе");
     return bucketsJpaRepository.findAll().stream().map(BucketMapper::toBucketName).toList();

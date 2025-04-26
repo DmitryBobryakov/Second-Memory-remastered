@@ -8,7 +8,6 @@ import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import lombok.RequiredArgsConstructor;
 import mipt.app.secondmemory.dto.directory.BucketDto;
-import mipt.app.secondmemory.entity.BucketEntity;
 import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.service.BucketService;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +21,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/second-memory")
+@RequestMapping("/api/v1")
 public class BucketsControllerImpl implements BucketsController {
 
   private final BucketService bucketService;

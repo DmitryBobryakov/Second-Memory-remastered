@@ -78,7 +78,7 @@ create table if not exists files_tags
     file_id bigint,
     tag_id  bigint,
     primary key (file_id, tag_id),
-    foreign key (file_id) references files_info (id),
+    foreign key (file_id) references files_info (id) on delete cascade,
     foreign key (tag_id) references tags (id)
 );
 

@@ -21,12 +21,7 @@ import java.security.NoSuchAlgorithmException;
 
 import jakarta.servlet.http.Part;
 import lombok.RequiredArgsConstructor;
-import java.sql.Timestamp;
-import java.time.Instant;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.dto.file.FileInfoResponse;
-import mipt.app.secondmemory.entity.FileEntity;
-import mipt.app.secondmemory.mapper.FilesMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -38,8 +33,6 @@ import org.springframework.web.servlet.ModelAndView;
 @RequiredArgsConstructor
 public class FilesS3RepositoryImpl {
   private final MinioClient client;
-  private final FilesRepository filesRepository;
-  private final BucketsRepository bucketsRepository;
 
   public ModelAndView downloadFile(String bucketName, String key)
       throws ServerException,

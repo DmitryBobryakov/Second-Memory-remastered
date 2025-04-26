@@ -58,7 +58,7 @@ public class FilesControllerImpl implements FilesController {
   }
 
   @Override
-  public ResponseEntity<Void> renameFile(String bucketName, String oldKey, String newKey)
+  public ResponseEntity<FileInfoResponse> renameFile(Long fileId, String newFileName)
       throws ServerException,
           InsufficientDataException,
           FileNotFoundException,
@@ -68,13 +68,14 @@ public class FilesControllerImpl implements FilesController {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException {
-    filesService.renameFile(bucketName, oldKey, newKey);
-    return ResponseEntity.ok().build();
+          InternalException,
+          NoSuchDirectoryException,
+          BucketNotFoundException {
+    return ResponseEntity.ok(filesService.renameFile(fileId, newFileName));
   }
 
   @Override
-  public ResponseEntity<Void> deleteFile(String bucketName, String key)
+  public ResponseEntity<FileInfoResponse> deleteFile(Long fileId)
       throws ServerException,
           InsufficientDataException,
           FileNotFoundException,
@@ -84,14 +85,15 @@ public class FilesControllerImpl implements FilesController {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException {
-    filesService.deleteFile(bucketName, key);
-    return ResponseEntity.ok().build();
+          InternalException,
+          NoSuchDirectoryException,
+          BucketNotFoundException {
+
+    return ResponseEntity.ok(filesService.deleteFile(fileId));
   }
 
   @Override
-  public ResponseEntity<Void> moveFile(
-      String oldBucketName, String newBucketName, String fileName, String oldPath, String newPath)
+  public ResponseEntity<FileInfoResponse> moveFile(Long fileId, Long folderId)
       throws ServerException,
           InsufficientDataException,
           FileNotFoundException,
@@ -103,9 +105,11 @@ public class FilesControllerImpl implements FilesController {
           XmlParserException,
           InternalException,
           FileAlreadyExistsException,
-          NoSuchBucketException {
-    filesService.moveFile(oldBucketName, newBucketName, fileName, oldPath, newPath);
-    return ResponseEntity.ok().build();
+          NoSuchBucketException,
+          NoSuchDirectoryException,
+          BucketNotFoundException {
+
+    return ResponseEntity.ok(filesService.moveFile(fileId, folderId));
   }
 
   @Override
