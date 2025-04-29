@@ -3,9 +3,10 @@ package mipt.app.secondmemory.controller;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
+import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
 import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
-import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
+import mipt.app.secondmemory.exception.role.NoRoleFoundException;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
 import mipt.app.secondmemory.exception.tag.TagNotFoundException;
 import mipt.app.secondmemory.exception.user.AuthenticationDataMismatchException;
@@ -73,5 +74,10 @@ public class GlobalExceptionHandler {
   public ResponseEntity<String> handleFileAlreadyExistsException(
       FileAlreadyExistsException exception) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+  }
+
+  @ExceptionHandler(NoRoleFoundException.class)
+  public ResponseEntity<String> handleNoRoleFoundException(NoRoleFoundException exception) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
   }
 }

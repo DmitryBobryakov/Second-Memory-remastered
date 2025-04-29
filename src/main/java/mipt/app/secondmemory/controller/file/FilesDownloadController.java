@@ -7,15 +7,14 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 @Tag(name = "Download File", description = "Скачивание файла")
 public interface FilesDownloadController {

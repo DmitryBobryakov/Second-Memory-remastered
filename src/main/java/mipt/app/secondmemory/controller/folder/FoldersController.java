@@ -7,6 +7,9 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import mipt.app.secondmemory.dto.directory.FolderDto;
 import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
@@ -15,10 +18,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 @Tag(name = "Folders API", description = "Управление дочерними папками")
 public interface FoldersController {

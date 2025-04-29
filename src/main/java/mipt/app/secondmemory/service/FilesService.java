@@ -29,6 +29,9 @@ import mipt.app.secondmemory.dto.file.MessageFileDto;
 import mipt.app.secondmemory.entity.BucketEntity;
 import mipt.app.secondmemory.entity.FileEntity;
 import mipt.app.secondmemory.entity.FolderEntity;
+import mipt.app.secondmemory.entity.Role;
+import mipt.app.secondmemory.entity.RoleType;
+import mipt.app.secondmemory.entity.User;
 import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
@@ -40,6 +43,7 @@ import mipt.app.secondmemory.mapper.FilesMapper;
 import mipt.app.secondmemory.repository.DirectoriesRepository;
 import mipt.app.secondmemory.repository.FilesRepository;
 import mipt.app.secondmemory.repository.FilesS3RepositoryImpl;
+import mipt.app.secondmemory.repository.RolesRepository;
 import mipt.app.secondmemory.repository.bucket.BucketsJpaRepository;
 import mipt.app.secondmemory.repository.folder.FoldersJpaRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,6 +74,7 @@ public class FilesService {
 
   private final FilesRepository filesRepository;
   private final DirectoriesRepository directoriesRepository;
+  private final RolesRepository rolesRepository;
 
   public ModelAndView downloadFile(String bucketName, String key)
       throws ServerException,
@@ -90,7 +95,7 @@ public class FilesService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public FileInfoResponse uploadFile(Long bucketId, Part file)
+  public FileInfoResponse uploadFile(Long bucketId, Part file, User user)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -115,10 +120,11 @@ public class FilesService {
       throw new FileMemoryLimitExceededException("Files are too large: " + fileMemoryLimit);
     }
     filesS3Repository.uploadFile(bucketName, file);
-    Long ownerId = 1L; // Надо изменить потом
     FileEntity fileEntity =
-        FilesMapper.toFileEntity(file, ownerId, bucketId, bucketEntity.getRootFolderId());
+        FilesMapper.toFileEntity(file, user.getId(), bucketId, bucketEntity.getRootFolderId());
     filesRepository.save(fileEntity);
+    Role ownerRole = new Role(user, fileEntity, RoleType.OWNER);
+    rolesRepository.save(ownerRole);
     kafkaTemplate.send(
         "files_topic",
         objectMapper.writeValueAsString(

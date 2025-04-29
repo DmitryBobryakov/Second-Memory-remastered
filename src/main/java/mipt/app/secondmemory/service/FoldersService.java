@@ -6,6 +6,9 @@ import io.minio.errors.InternalException;
 import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.FolderDto;
@@ -17,10 +20,6 @@ import mipt.app.secondmemory.repository.bucket.BucketsJpaRepository;
 import mipt.app.secondmemory.repository.folder.FoldersJpaRepository;
 import mipt.app.secondmemory.repository.folder.FoldersS3Repository;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 @Service
 @RequiredArgsConstructor

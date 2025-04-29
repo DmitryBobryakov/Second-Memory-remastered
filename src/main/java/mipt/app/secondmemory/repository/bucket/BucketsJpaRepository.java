@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BucketsJpaRepository extends JpaRepository<BucketEntity, Long> {
-    Long findByName(String name);
+  Long findByName(String name);
 }

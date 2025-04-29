@@ -98,27 +98,27 @@ public class FileEntity {
   @Override
   public String toString() {
     return getClass().getSimpleName()
-           + "("
-           + "id = "
-           + id
-           + ", "
-           + "name = "
-           + name
-           + ", "
-           + "capacity = "
-           + capacity
-           + ", "
-           + "ownerId = "
-           + ownerId
-           + ", "
-           + "creationDate = "
-           + creationTs
-           + ", "
-           + "lastModifiedDate = "
-           + lastModifiedTs
-           + ", "
-           + "bucketId = "
-           + bucketId
-           + ")";
+        + "("
+        + "id = "
+        + id
+        + ", "
+        + "name = "
+        + name
+        + ", "
+        + "capacity = "
+        + capacity
+        + ", "
+        + "ownerId = "
+        + ownerId
+        + ", "
+        + "creationDate = "
+        + creationTs
+        + ", "
+        + "lastModifiedDate = "
+        + lastModifiedTs
+        + ", "
+        + "bucketId = "
+        + bucketId
+        + ")";
   }
 }

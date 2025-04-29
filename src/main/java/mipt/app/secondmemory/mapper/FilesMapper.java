@@ -1,11 +1,11 @@
 package mipt.app.secondmemory.mapper;
 
-import lombok.experimental.UtilityClass;
 import jakarta.servlet.http.Part;
-import mipt.app.secondmemory.dto.file.FileInfoResponse;
-import mipt.app.secondmemory.entity.FileEntity;
 import java.sql.Timestamp;
 import java.time.Instant;
+import lombok.experimental.UtilityClass;
+import mipt.app.secondmemory.dto.file.FileInfoResponse;
+import mipt.app.secondmemory.entity.FileEntity;
 
 @UtilityClass
 public class FilesMapper {
