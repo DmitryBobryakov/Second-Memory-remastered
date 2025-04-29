@@ -1,6 +1,8 @@
 package mipt.app.secondmemory.controller.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
@@ -15,7 +17,6 @@ import mipt.app.secondmemory.entity.User;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
 import mipt.app.secondmemory.exception.user.AuthenticationDataMismatchException;
 import mipt.app.secondmemory.exception.user.UserNotFoundException;
-import mipt.app.secondmemory.repository.FilesRepository;
 import mipt.app.secondmemory.repository.SessionsRepository;
 import mipt.app.secondmemory.repository.UsersRepository;
 import mipt.app.secondmemory.service.KafkaProducerService;
@@ -38,12 +39,21 @@ public class UsersControllerImpl implements UsersController {
   private final SessionsRepository sessionsRepository;
   private final KafkaProducerService producerService;
   private final Instant date = Instant.now();
+  private final MeterRegistry registry;
+
+  private Counter getUserRequestCounter(String type) {
+    return Counter.builder("user.requests")
+        .description("Number of user requests by type")
+        .tags("type", type)
+        .register(registry);
+  }
 
   @Override
   @PostMapping("/sign-in")
   public ResponseEntity<String> authenticateUser(
       AuthUserRequest userDto, HttpServletResponse response)
       throws UserNotFoundException, AuthenticationDataMismatchException, JsonProcessingException {
+    getUserRequestCounter("authentication").increment();
     log.debug(
         "UsersController -> authenticate() -> Accepted request with email {}", userDto.getEmail());
     User user = usersService.authenticate(userDto);
@@ -81,6 +91,7 @@ public class UsersControllerImpl implements UsersController {
   @PostMapping("/sign-up")
   public ResponseEntity<RegisterUserResponse> registerUser(User user)
       throws JsonProcessingException {
+    getUserRequestCounter("registration").increment();
     log.debug(
         "UsersController -> registerUser() -> Accepted request with email {}", user.getEmail());
     usersService.create(user);
@@ -97,10 +108,12 @@ public class UsersControllerImpl implements UsersController {
   @Override
   @PatchMapping("/update")
   public ResponseEntity<String> updateUser(User user, String cookieValue)
-      throws UserNotFoundException {
+      throws UserNotFoundException, SessionNotFoundException {
+    getUserRequestCounter("update").increment();
     log.debug("UsersController -> updateUser() -> Accepted request with email {}", user.getEmail());
 
-    Session session = sessionsRepository.findByUserId(user.getId()).orElseThrow();
+    Session session =
+        sessionsRepository.findByUserId(user.getId()).orElseThrow(SessionNotFoundException::new);
     if (session.getCookie().equals(cookieValue)) {
       usersService.updateUser(user);
     } else {
@@ -118,6 +131,7 @@ public class UsersControllerImpl implements UsersController {
   @DeleteMapping("/delete")
   public ResponseEntity<String> deleteUser(String email, String cookieValue)
       throws UserNotFoundException, JsonProcessingException {
+    getUserRequestCounter("deletion").increment();
     log.debug("UsersController -> deleteUser() -> Accepted request with email {}", email);
 
     User user = usersRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
