@@ -72,5 +72,5 @@ create table if not exists files_roles (
     user_id bigint references users (id) not null,
     file_id BIGINT REFERENCES files_info (id)  NOT NULL,
     type    VARCHAR(50)                  NOT NULL,
-    UNIQUE (user_id, post_id, type)
+    UNIQUE (user_id, file_id, type)
 );

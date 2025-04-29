@@ -276,7 +276,7 @@ public class FilesService {
     return FilesMapper.toFileDto(fileEntity);
   }
 
-  public FileInfoResponse uploadFileToFolder(Long folderId, Part file)
+  public FileInfoResponse uploadFileToFolder(Long folderId, Part file, User user)
       throws NoSuchDirectoryException,
           BucketNotFoundException,
           ServerException,
@@ -297,9 +297,8 @@ public class FilesService {
             .orElseThrow(BucketNotFoundException::new)
             .getName();
     filesS3Repository.uploadFileToFolder(bucketName, file, pathToFolder);
-    Long ownerId = 1L; // Изменить попозже
     FileEntity fileEntity =
-        FilesMapper.toFileEntity(file, ownerId, folderEntity.getBucketId(), folderId);
+        FilesMapper.toFileEntity(file, user.getId(), folderEntity.getBucketId(), folderId);
     filesRepository.save(fileEntity);
     MessageFileDto message =
         new MessageFileDto(
@@ -308,6 +307,8 @@ public class FilesService {
                 + fileEntity.getName(),
             fileEntity.getOwnerId(),
             bucketName);
+    Role ownerRole = new Role(user, fileEntity, RoleType.OWNER);
+    rolesRepository.save(ownerRole);
     CompletableFuture<SendResult<String, String>> sendResult =
         kafkaTemplate.send("files_topic", objectMapper.writeValueAsString(message));
     return FilesMapper.toFileDto(fileEntity);

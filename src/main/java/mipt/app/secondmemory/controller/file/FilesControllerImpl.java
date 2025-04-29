@@ -63,7 +63,9 @@ public class FilesControllerImpl implements FilesController {
           NoSuchBucketException,
           InvalidResponseException,
           XmlParserException,
-          InternalException {
+          InternalException,
+          SessionNotFoundException,
+          BucketNotFoundException {
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
     return ResponseEntity.ok(filesService.uploadFile(bucketId, file, session.getUser()));
@@ -83,10 +85,8 @@ public class FilesControllerImpl implements FilesController {
           XmlParserException,
           InternalException,
           NoSuchDirectoryException,
-          BucketNotFoundException {
-    //    return ResponseEntity.ok(filesService.renameFile(fileId, newFileName));
-    //          InternalException,
-    //          SessionNotFoundException {
+          BucketNotFoundException,
+          SessionNotFoundException {
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
     Role userRole =
@@ -97,8 +97,6 @@ public class FilesControllerImpl implements FilesController {
       throw new AuthorizationDeniedException("You don't have permission to rename file");
     }
     return ResponseEntity.ok(filesService.renameFile(fileId, newFileName));
-    //    filesService.renameFile(bucketName, oldKey, newKey);
-    //    return ResponseEntity.ok().build();
   }
 
   @Override
@@ -114,11 +112,8 @@ public class FilesControllerImpl implements FilesController {
           XmlParserException,
           InternalException,
           NoSuchDirectoryException,
-          BucketNotFoundException {
-
-    //    return ResponseEntity.ok(filesService.deleteFile(fileId));
-    //          InternalException,
-    //          SessionNotFoundException {
+          BucketNotFoundException,
+          SessionNotFoundException {
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
     Role userRole =
@@ -128,16 +123,13 @@ public class FilesControllerImpl implements FilesController {
     if (userRole.getType() != OWNER) {
       throw new AuthorizationDeniedException("You don't have permission to delete file");
     }
-    //    filesService.deleteFile(bucketName, key);
     return ResponseEntity.ok(filesService.deleteFile(fileId));
-    //    return ResponseEntity.ok().build();
   }
 
   @Override
   public ResponseEntity<FileInfoResponse> moveFile(Long fileId, Long folderId, String cookieValue)
       throws ServerException,
           InsufficientDataException,
-          FileNotFoundException,
           ErrorResponseException,
           IOException,
           NoSuchAlgorithmException,
@@ -148,11 +140,9 @@ public class FilesControllerImpl implements FilesController {
           FileAlreadyExistsException,
           NoSuchBucketException,
           NoSuchDirectoryException,
-          BucketNotFoundException {
-
-    //    return ResponseEntity.ok(filesService.moveFile(fileId, folderId));
-    //          NoSuchBucketException,
-    //          SessionNotFoundException {
+          BucketNotFoundException,
+          SessionNotFoundException,
+          FileNotFoundException {
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
     Role userRole =
@@ -166,7 +156,8 @@ public class FilesControllerImpl implements FilesController {
   }
 
   @Override
-  public ResponseEntity<FileInfoResponse> uploadFileToFolder(Long folderId, Part file)
+  public ResponseEntity<FileInfoResponse> uploadFileToFolder(
+      Long folderId, Part file, String cookieValue)
       throws NoSuchDirectoryException,
           BucketNotFoundException,
           ServerException,
@@ -177,8 +168,11 @@ public class FilesControllerImpl implements FilesController {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException {
-    return ResponseEntity.ok(filesService.uploadFileToFolder(folderId, file));
+          InternalException,
+          SessionNotFoundException {
+    Session session =
+        sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
+    return ResponseEntity.ok(filesService.uploadFileToFolder(folderId, file, session.getUser()));
   }
 
   @Override

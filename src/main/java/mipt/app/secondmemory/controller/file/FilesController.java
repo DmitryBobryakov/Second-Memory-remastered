@@ -57,8 +57,6 @@ public interface FilesController {
           XmlParserException,
           InternalException,
           FileMemoryLimitExceededException,
-          NoSuchBucketException,
-          BucketNotFoundException,
           SessionNotFoundException,
           NoSuchBucketException,
           BucketNotFoundException;
@@ -117,11 +115,14 @@ public interface FilesController {
           NoSuchDirectoryException,
           BucketNotFoundException,
           NoSuchBucketException,
-          SessionNotFoundException;
+          SessionNotFoundException,
+          FileNotFoundException;
 
   @PostMapping("/files/upload/folder/{folderId}")
   ResponseEntity<FileInfoResponse> uploadFileToFolder(
-      @PathVariable(name = "folderId") Long folderId, @RequestParam("file") Part file)
+      @PathVariable(name = "folderId") Long folderId,
+      @RequestParam("file") Part file,
+      @CookieValue("token") String cookieValue)
       throws NoSuchDirectoryException,
           BucketNotFoundException,
           ServerException,
@@ -132,7 +133,8 @@ public interface FilesController {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException;
+          InternalException,
+          SessionNotFoundException;
 
   @Operation(summary = "Получение информации о файле по ID")
   @ApiResponse(responseCode = "200", description = "Информация о файле получена")
