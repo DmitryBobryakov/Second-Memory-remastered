@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import mipt.app.secondmemory.dto.user.AuthUserRequest;
 import mipt.app.secondmemory.dto.user.RegisterUserResponse;
 import mipt.app.secondmemory.entity.User;
+import mipt.app.secondmemory.exception.session.SessionNotFoundException;
 import mipt.app.secondmemory.exception.user.AuthenticationDataMismatchException;
 import mipt.app.secondmemory.exception.user.UserNotFoundException;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +52,7 @@ public interface UsersController {
       content = @Content)
   ResponseEntity<String> updateUser(
       @RequestBody User user, @CookieValue("token") String cookieValue)
-      throws UserNotFoundException;
+      throws UserNotFoundException, SessionNotFoundException;
 
   @Operation(summary = "Удалить пользователя")
   @ApiResponse(responseCode = "200", description = "Пользователь удален")
