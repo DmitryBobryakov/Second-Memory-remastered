@@ -8,6 +8,7 @@ import mipt.app.secondmemory.entity.FolderEntity;
 public class FoldersMapper {
   public static FolderDto toFolderDto(FolderEntity folderEntity) {
     return FolderDto.builder()
+        .folderId(folderEntity.getId())
         .bucketId(folderEntity.getBucketId())
         .parentId(folderEntity.getParentId())
         .name(folderEntity.getName())

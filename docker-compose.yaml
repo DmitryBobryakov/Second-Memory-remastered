@@ -58,14 +58,6 @@ services:
       KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 5000
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
 
-  kafka-ui:
-    container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - 8082:8080
-    environment:
-      DYNAMIC_CONFIG_ENABLED: true
-
 networks:
   postgres:
     driver: bridge

@@ -1,5 +1,6 @@
 package mipt.app.secondmemory.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.minio.BucketExistsArgs;
 import io.minio.MinioClient;
 import io.minio.Result;
@@ -16,12 +17,15 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
+import mipt.app.secondmemory.dto.file.MessageFileDto;
 import mipt.app.secondmemory.entity.BucketEntity;
 import mipt.app.secondmemory.entity.FileEntity;
 import mipt.app.secondmemory.entity.FolderEntity;
@@ -40,6 +44,8 @@ import mipt.app.secondmemory.repository.bucket.BucketsJpaRepository;
 import mipt.app.secondmemory.repository.folder.FoldersJpaRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -50,9 +56,12 @@ import org.springframework.web.servlet.ModelAndView;
 @Slf4j
 @RequiredArgsConstructor
 public class FilesService {
+  private final ObjectMapper objectMapper;
+
   @Value("${mipt.app.servlet.part.file-memory-limit}")
   private long fileMemoryLimit;
 
+  private final KafkaTemplate<String, String> kafkaTemplate;
   private final FoldersJpaRepository foldersJpaRepository;
   private final BucketsJpaRepository bucketsJpaRepository;
 
@@ -110,6 +119,10 @@ public class FilesService {
     FileEntity fileEntity =
         FilesMapper.toFileEntity(file, ownerId, bucketId, bucketEntity.getRootFolderId());
     filesRepository.save(fileEntity);
+    kafkaTemplate.send(
+        "files_topic",
+        objectMapper.writeValueAsString(
+            new MessageFileDto(fileEntity.getName(), fileEntity.getOwnerId(), bucketName)));
     return FilesMapper.toFileDto(fileEntity);
   }
 
@@ -282,6 +295,15 @@ public class FilesService {
     FileEntity fileEntity =
         FilesMapper.toFileEntity(file, ownerId, folderEntity.getBucketId(), folderId);
     filesRepository.save(fileEntity);
+    MessageFileDto message =
+        new MessageFileDto(
+            foldersJpaRepository.takePathToFolder(fileEntity.getFolderId())
+                + "/"
+                + fileEntity.getName(),
+            fileEntity.getOwnerId(),
+            bucketName);
+    CompletableFuture<SendResult<String, String>> sendResult =
+        kafkaTemplate.send("files_topic", objectMapper.writeValueAsString(message));
     return FilesMapper.toFileDto(fileEntity);
   }
 
