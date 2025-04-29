@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -20,14 +21,16 @@ import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
+import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
 import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
 import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
+import mipt.app.secondmemory.exception.session.SessionNotFoundException;
 import org.springframework.http.ResponseEntity;
-import jakarta.servlet.http.Part;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -39,9 +42,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "File API", description = "Управление файлами")
 public interface FilesController {
 
-  @PostMapping("/files/upload/{bucketName}")
-  ResponseEntity<FileInfoResponse> uploadFiles(
-      @PathVariable(name = "bucketName") String bucketName, @RequestParam("file") Part file)
+  @PostMapping("/files/upload/{bucketId}")
+  ResponseEntity<FileInfoResponse> uploadFile(
+      @PathVariable(name = "bucketId") Long bucketId,
+      @RequestParam("file") Part file,
+      @CookieValue("token") String cookieValue)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -52,13 +57,17 @@ public interface FilesController {
           XmlParserException,
           InternalException,
           FileMemoryLimitExceededException,
-          NoSuchBucketException;
+          NoSuchBucketException,
+          BucketNotFoundException,
+          SessionNotFoundException;
 
   @PatchMapping("/files/rename/{bucketName}/{oldKey}")
   ResponseEntity<Void> renameFile(
       @PathVariable(name = "bucketName") String bucketName,
+      @RequestBody Long fileId,
       @PathVariable(name = "oldKey") String oldKey,
-      @RequestParam(name = "newKey") String newKey)
+      @RequestParam(name = "newKey") String newKey,
+      @CookieValue("token") String cookieValue)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -68,11 +77,15 @@ public interface FilesController {
           InvalidResponseException,
           XmlParserException,
           InternalException,
-          FileNotFoundException;
+          FileNotFoundException,
+          SessionNotFoundException;
 
   @DeleteMapping("/files/delete/{bucketName}/{key}")
   ResponseEntity<Void> deleteFile(
-      @PathVariable(name = "bucketName") String bucketName, @PathVariable(name = "key") String key)
+      @PathVariable(name = "bucketName") String bucketName,
+      @RequestBody Long fileId,
+      @PathVariable(name = "key") String key,
+      @CookieValue("token") String cookieValue)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -82,7 +95,8 @@ public interface FilesController {
           InvalidResponseException,
           XmlParserException,
           InternalException,
-          FileNotFoundException;
+          FileNotFoundException,
+          SessionNotFoundException;
 
   @PostMapping("/files/move/{oldBucketName}/{newBucketName}")
   ResponseEntity<Void> moveFile(
@@ -90,7 +104,9 @@ public interface FilesController {
       @PathVariable(name = "newBucketName") String newBucketName,
       @RequestParam(name = "fileName") String fileName,
       @RequestParam(name = "oldPath") String oldPath,
-      @RequestParam(name = "newPath") String newPath)
+      @RequestParam(name = "newPath") String newPath,
+      @RequestBody Long fileId,
+      @CookieValue("token") String cookieValue)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -102,22 +118,40 @@ public interface FilesController {
           InternalException,
           FileNotFoundException,
           FileAlreadyExistsException,
-          NoSuchBucketException;
+          NoSuchBucketException,
+          SessionNotFoundException;
+
+  @PostMapping("/files/upload/folder/{folderId}")
+  ResponseEntity<FileInfoResponse> uploadFileToFolder(
+      @PathVariable(name = "folderId") Long folderId, @RequestParam("file") Part file)
+      throws NoSuchDirectoryException,
+          BucketNotFoundException,
+          ServerException,
+          InsufficientDataException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException;
 
   @Operation(summary = "Получение информации о файле по ID")
   @ApiResponse(responseCode = "200", description = "Информация о файле получена")
   @GetMapping("/info/file/{fileId}")
   ResponseEntity<FileInfoResponse> getFileInfo(
       @Parameter(description = "ID файла") @PathVariable("fileId") long fileId,
-      @Parameter(description = "ID пользователя") @RequestBody FileInfoRequest fileInfoRequest)
-      throws FileNotFoundException, DatabaseException;
+      @Parameter(description = "ID пользователя") @RequestBody FileInfoRequest fileInfoRequest,
+      @CookieValue("token") String cookieValue)
+      throws FileNotFoundException, DatabaseException, SessionNotFoundException;
 
   @Operation(summary = "Получение информации о файлах в папке по пути до папки и названию бакета")
   @ApiResponse(responseCode = "200", description = "Информация о файлах в папке получена")
   @GetMapping("/info/directory")
   ResponseEntity<Iterable<Result<Item>>> getFilesInDirectory(
       @Parameter(description = "ID пользователя, путь до папки и название бакета") @RequestBody
-          DirectoryInfoRequest directoryInfoRequest)
+          DirectoryInfoRequest directoryInfoRequest,
+      @CookieValue("token") String cookieValue)
       throws NoSuchDirectoryException;
 
   @Operation(summary = "Получение корневых папок бакета по его названию")
@@ -125,7 +159,8 @@ public interface FilesController {
   @GetMapping("/root/directories")
   ResponseEntity<Iterable<Result<Item>>> getRootDirectories(
       @Parameter(description = "Название бакета и ID пользователя") @RequestBody
-          RootDirectoriesRequest rootDirectoriesRequest)
+          RootDirectoriesRequest rootDirectoriesRequest,
+      @CookieValue("token") String cookieValue)
       throws NoSuchBucketException;
 
   @PostMapping("/file-search")

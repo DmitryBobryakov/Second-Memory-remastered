@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MinioClientConfig {
+
   @Bean
   public MinioClient createMinioClient(
       @Value("${mipt.app.minio.access-key}") String accessKey,

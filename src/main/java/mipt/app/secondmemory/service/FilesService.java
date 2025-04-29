@@ -11,18 +11,24 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.messages.Item;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-
-import jakarta.servlet.http.Part;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
+import mipt.app.secondmemory.entity.BucketEntity;
+import mipt.app.secondmemory.entity.FileEntity;
+import mipt.app.secondmemory.entity.FolderEntity;
+import mipt.app.secondmemory.entity.Role;
+import mipt.app.secondmemory.entity.RoleType;
+import mipt.app.secondmemory.entity.User;
+import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
 import mipt.app.secondmemory.exception.file.DatabaseException;
@@ -33,6 +39,9 @@ import mipt.app.secondmemory.mapper.FilesMapper;
 import mipt.app.secondmemory.repository.DirectoriesRepository;
 import mipt.app.secondmemory.repository.FilesRepository;
 import mipt.app.secondmemory.repository.FilesS3RepositoryImpl;
+import mipt.app.secondmemory.repository.RolesRepository;
+import mipt.app.secondmemory.repository.bucket.BucketsJpaRepository;
+import mipt.app.secondmemory.repository.folder.FoldersJpaRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -48,11 +57,15 @@ public class FilesService {
   @Value("${mipt.app.servlet.part.file_max_size}")
   private long fileMemoryLimit;
 
+  private final FoldersJpaRepository foldersJpaRepository;
+  private final BucketsJpaRepository bucketsJpaRepository;
+
   private final FilesS3RepositoryImpl filesS3Repository;
   private final MinioClient client;
 
   private final FilesRepository filesRepository;
   private final DirectoriesRepository directoriesRepository;
+  private final RolesRepository rolesRepository;
 
   public ModelAndView downloadFile(String bucketName, String key)
       throws ServerException,
@@ -73,7 +86,7 @@ public class FilesService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public FileInfoResponse uploadFile(String bucketName, Part files)
+  public FileInfoResponse uploadFile(Long bucketId, Part file, User user)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -84,16 +97,26 @@ public class FilesService {
           XmlParserException,
           InternalException,
           FileMemoryLimitExceededException,
-          NoSuchBucketException {
+          NoSuchBucketException,
+          BucketNotFoundException {
     log.debug("Функция по загрузке файла вызвана в сервисе");
+    BucketEntity bucketEntity =
+        bucketsJpaRepository.findById(bucketId).orElseThrow(BucketNotFoundException::new);
+    String bucketName = bucketEntity.getName();
     boolean found = client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
     if (!found) {
       throw new NoSuchBucketException("Bucket does not exist with name: " + bucketName);
     }
-    if (files.getSize() > fileMemoryLimit) {
+    if (file.getSize() > fileMemoryLimit) {
       throw new FileMemoryLimitExceededException("Files are too large: " + fileMemoryLimit);
     }
-    return filesS3Repository.uploadFile(bucketName, files);
+    filesS3Repository.uploadFile(bucketName, file);
+    FileEntity fileEntity =
+        FilesMapper.toFileEntity(file, user.getId(), bucketId, bucketEntity.getRootFolderId());
+    filesRepository.save(fileEntity);
+    Role ownerRole = new Role(user, fileEntity, RoleType.OWNER);
+    rolesRepository.save(ownerRole);
+    return FilesMapper.toFileDto(fileEntity);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
@@ -170,6 +193,34 @@ public class FilesService {
     filesS3Repository.moveFile(oldBucketName, newBucketName, fileName, oldPath, newPath);
   }
 
+  public FileInfoResponse uploadFileToFolder(Long folderId, Part file)
+      throws NoSuchDirectoryException,
+          BucketNotFoundException,
+          ServerException,
+          InsufficientDataException,
+          ErrorResponseException,
+          IOException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException {
+    FolderEntity folderEntity =
+        foldersJpaRepository.findById(folderId).orElseThrow(NoSuchDirectoryException::new);
+    String pathToFolder = foldersJpaRepository.takePathToFolder(folderId);
+    String bucketName =
+        bucketsJpaRepository
+            .findById(folderEntity.getBucketId())
+            .orElseThrow(BucketNotFoundException::new)
+            .getName();
+    filesS3Repository.uploadFileToFolder(bucketName, file, pathToFolder);
+    Long ownerId = 1L; // Изменить попозже
+    FileEntity fileEntity =
+        FilesMapper.toFileEntity(file, ownerId, folderEntity.getBucketId(), folderId);
+    filesRepository.save(fileEntity);
+    return FilesMapper.toFileDto(fileEntity);
+  }
+
   @Cacheable(
       cacheNames = {"fileInfo"},
       key = "{#fileId}")
@@ -178,21 +229,12 @@ public class FilesService {
     log.debug("File ID: {}, User ID: {}", fileId, fileInfoRequest.userId());
     return filesRepository
         .findById(fileId)
-        .map(
-            file ->
-                new FileInfoResponse(
-                    file.getId(),
-                    file.getName(),
-                    file.getCapacity(),
-                    file.getOwnerId(),
-                    file.getCreationDate(),
-                    file.getLastModifiedDate(),
-                    file.getBucketId()))
+        .map(FilesMapper::toFileDto)
         .orElseThrow(() -> new DatabaseException("Cannot select file data from DB"));
   }
 
   public List<FileInfoResponse> searchFiles(String name) {
-    return filesRepository.findByNameLike(name).stream().map(FilesMapper::toDto).toList();
+    return filesRepository.findByNameLike(name).stream().map(FilesMapper::toFileDto).toList();
   }
 
   @Cacheable(

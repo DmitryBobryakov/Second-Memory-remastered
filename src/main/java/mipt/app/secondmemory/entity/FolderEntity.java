@@ -14,22 +14,24 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "buckets")
+@Table(name = "folders")
 @Getter
-@Schema(name = "Bucket", description = "Сущность корневой папки")
+@Schema(name = "Folder", description = "Сущность дочерней папки")
 @Builder(toBuilder = true)
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BucketEntity {
+public class FolderEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Schema(description = "Название корневой папки", example = "root", type = "String")
-  @Column(name = "name", length = 30)
+  @Column(name = "name")
   private String name;
 
-  @Column(name = "rootFolderId", length = 30)
-  private long rootFolderId;
+  @Column(name = "parent_id")
+  private Long parentId;
+
+  @Column(name = "bucket_id")
+  private Long bucketId;
 }

@@ -52,15 +52,18 @@ public class FileEntity {
   @NotNull
   private Long bucketId;
 
+  @Column(name = "folder_id")
+  private Long folderId;
+
   @Schema(description = "Дата создания файла", type = "Timestamp")
   @Column(name = "creation_ts")
   @NotNull(message = "File creation date has to be filled")
-  private Timestamp creationDate;
+  private Timestamp creationTs;
 
   @Schema(description = "Последняя дата обновления файла", type = "Timestamp")
   @Column(name = "last_modified_ts")
   @NotNull(message = "File last modified date has to be filled")
-  private Timestamp lastModifiedDate;
+  private Timestamp lastModifiedTs;
 
   @Override
   public final boolean equals(Object o) {
@@ -109,10 +112,10 @@ public class FileEntity {
         + ownerId
         + ", "
         + "creationDate = "
-        + creationDate
+        + creationTs
         + ", "
         + "lastModifiedDate = "
-        + lastModifiedDate
+        + lastModifiedTs
         + ", "
         + "bucketId = "
         + bucketId

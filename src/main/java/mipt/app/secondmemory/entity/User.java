@@ -1,29 +1,34 @@
 package mipt.app.secondmemory.entity;
 
-import jakarta.persistence.CascadeType;
+import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.EAGER;
+import static jakarta.persistence.FetchType.LAZY;
+import static jakarta.persistence.GenerationType.IDENTITY;
+import static lombok.AccessLevel.PROTECTED;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "users")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = PROTECTED)
 @Getter
 @Setter
 public class User {
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = IDENTITY)
   private Long id;
 
   @Email(message = "Email should be valid")
@@ -38,8 +43,11 @@ public class User {
   @Column(name = "password")
   private String password;
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @OneToOne(mappedBy = "user", cascade = ALL, fetch = EAGER)
   private Session session;
+
+  @OneToMany(fetch = LAZY, mappedBy = "user", cascade = ALL, orphanRemoval = true)
+  private List<Role> roles = new ArrayList<>();
 
   public User(String email, String name, String password) {
     this.email = email;

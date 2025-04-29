@@ -13,19 +13,13 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.http.Method;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Timestamp;
-import java.time.Instant;
-
-import jakarta.servlet.http.Part;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.dto.file.FileInfoResponse;
-import mipt.app.secondmemory.entity.FileEntity;
-import mipt.app.secondmemory.mapper.FilesMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -63,7 +57,7 @@ public class FilesS3RepositoryImpl {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT)
-  public FileInfoResponse uploadFile(String bucketName, Part file)
+  public void uploadFile(String bucketName, Part file)
       throws IOException,
           InsufficientDataException,
           ErrorResponseException,
@@ -85,19 +79,6 @@ public class FilesS3RepositoryImpl {
         PutObjectArgs.builder().bucket(bucketName).object(fileName).stream(
                 fileInputStream, -1, 10485760)
             .build());
-    Long bucketId = bucketsRepository.findByName(bucketName); // Взять bucketId из buckets
-    Long ownerId = 1L; // Надо изменить потом
-    Timestamp currentTimestamp = Timestamp.from(Instant.now());
-    FileEntity fileEntity =FileEntity.builder()
-            .name(fileName)
-            .bucketId(bucketId)
-            .capacity(file.getSize())
-            .creationDate(currentTimestamp)
-            .lastModifiedDate(currentTimestamp)
-            .ownerId(ownerId)
-            .build();
-    filesRepository.save(fileEntity);
-    return FilesMapper.toDto(fileEntity);
   }
 
   public void renameFile(String bucketName, String oldKey, String newKey)
@@ -165,5 +146,24 @@ public class FilesS3RepositoryImpl {
             .source(CopySource.builder().bucket(oldBucketName).object(oldKey).build())
             .build());
     deleteFile(oldBucketName, oldKey);
+  }
+
+  public void uploadFileToFolder(String bucketName, Part file, String pathToFolder)
+      throws IOException,
+          ServerException,
+          InsufficientDataException,
+          ErrorResponseException,
+          NoSuchAlgorithmException,
+          InvalidKeyException,
+          InvalidResponseException,
+          XmlParserException,
+          InternalException {
+    String fileName = file.getSubmittedFileName();
+    InputStream fileInputStream = file.getInputStream();
+
+    client.putObject(
+        PutObjectArgs.builder().bucket(bucketName).object(pathToFolder + "/" + fileName).stream(
+                fileInputStream, -1, 10485760)
+            .build());
   }
 }
