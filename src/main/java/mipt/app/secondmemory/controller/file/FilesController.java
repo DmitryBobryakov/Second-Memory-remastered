@@ -17,7 +17,9 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
+import mipt.app.secondmemory.dto.directory.FilesAndFoldersInfoDto;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
@@ -165,4 +167,8 @@ public interface FilesController {
 
   @PostMapping("/file-search")
   ResponseEntity<List<FileInfoResponse>> searchFilesInDirectory(@RequestBody String name);
+
+  @PostMapping("/directory/{folderId}")
+  ResponseEntity<FilesAndFoldersInfoDto> getDirectoryInfo(
+      @PathVariable(name = "folderId") Long folderId);
 }

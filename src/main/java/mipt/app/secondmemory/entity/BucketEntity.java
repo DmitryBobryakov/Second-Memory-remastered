@@ -30,6 +30,6 @@ public class BucketEntity {
   @Column(name = "name", length = 30)
   private String name;
 
-  @Column(name = "rootFolderId", length = 30)
+  @Column(name = "root_folder_id", length = 30)
   private long rootFolderId;
 }
