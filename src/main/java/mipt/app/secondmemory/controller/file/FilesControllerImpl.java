@@ -4,6 +4,8 @@ import static mipt.app.secondmemory.entity.RoleType.OWNER;
 import static mipt.app.secondmemory.entity.RoleType.READER;
 import static mipt.app.secondmemory.entity.RoleType.WRITER;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.minio.Result;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
@@ -50,6 +52,14 @@ public class FilesControllerImpl implements FilesController {
   private final FilesService filesService;
   private final RolesRepository rolesRepository;
   private final SessionsRepository sessionsRepository;
+  private final MeterRegistry registry;
+
+  private Counter getFilesRequestCounter(String type) {
+    return Counter.builder("files.requests")
+            .description("Number of files requests by type")
+            .tags("type", type)
+            .register(registry);
+  }
 
   @Override
   public ResponseEntity<FileInfoResponse> uploadFile(Long bucketId, Part file, String cookieValue)
@@ -66,6 +76,7 @@ public class FilesControllerImpl implements FilesController {
           InternalException,
           SessionNotFoundException,
           BucketNotFoundException {
+    getFilesRequestCounter("upload").increment();
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
     return ResponseEntity.ok(filesService.uploadFile(bucketId, file, session.getUser()));
@@ -87,6 +98,7 @@ public class FilesControllerImpl implements FilesController {
           NoSuchDirectoryException,
           BucketNotFoundException,
           SessionNotFoundException {
+    getFilesRequestCounter("renaming").increment();
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
     Role userRole =
@@ -114,6 +126,7 @@ public class FilesControllerImpl implements FilesController {
           NoSuchDirectoryException,
           BucketNotFoundException,
           SessionNotFoundException {
+    getFilesRequestCounter("deletion").increment();
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
     Role userRole =
@@ -143,6 +156,7 @@ public class FilesControllerImpl implements FilesController {
           BucketNotFoundException,
           SessionNotFoundException,
           FileNotFoundException {
+    getFilesRequestCounter("moving").increment();
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
     Role userRole =
