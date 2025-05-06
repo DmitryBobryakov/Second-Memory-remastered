@@ -6,6 +6,7 @@ import static mipt.app.secondmemory.entity.RoleType.WRITER;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
 import io.minio.Result;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
@@ -22,6 +23,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
+import mipt.app.secondmemory.dto.directory.FilesAndFoldersInfoDto;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
@@ -224,5 +226,11 @@ public class FilesControllerImpl implements FilesController {
       RootDirectoriesRequest rootDirectoriesRequest, String cookieValue)
       throws NoSuchBucketException {
     return ResponseEntity.ok(filesService.getRootDirectories(rootDirectoriesRequest));
+  }
+
+  @Override
+  public ResponseEntity<FilesAndFoldersInfoDto> getDirectoryInfo(Long folderId) {
+    FilesAndFoldersInfoDto dto = filesService.getDirectoryInfo(folderId);
+    return ResponseEntity.ok(dto);
   }
 }

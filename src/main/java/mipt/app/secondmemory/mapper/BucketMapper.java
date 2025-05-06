@@ -7,7 +7,11 @@ import mipt.app.secondmemory.entity.BucketEntity;
 @UtilityClass
 public class BucketMapper {
   public static BucketDto toBucketDto(BucketEntity bucketEntity) {
-    return BucketDto.builder().name(bucketEntity.getName()).build();
+    return BucketDto.builder()
+        .rootFolderId(bucketEntity.getRootFolderId())
+        .id(bucketEntity.getId())
+        .name(bucketEntity.getName())
+        .build();
   }
 
   public static String toBucketName(BucketEntity bucketEntity) {

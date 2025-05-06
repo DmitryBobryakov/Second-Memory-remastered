@@ -11,6 +11,7 @@ import mipt.app.secondmemory.entity.FileEntity;
 public class FilesMapper {
   public static FileInfoResponse toFileDto(FileEntity fileEntity) {
     return FileInfoResponse.builder()
+        .fileId(fileEntity.getId())
         .fileCapacity(fileEntity.getCapacity())
         .fileName(fileEntity.getName())
         .bucketId(fileEntity.getBucketId())

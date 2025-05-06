@@ -22,6 +22,8 @@ import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
+import mipt.app.secondmemory.dto.directory.FilesAndFoldersInfoDto;
+import mipt.app.secondmemory.dto.directory.FolderDto;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
@@ -40,6 +42,7 @@ import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
 import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.mapper.FilesMapper;
+import mipt.app.secondmemory.mapper.FoldersMapper;
 import mipt.app.secondmemory.repository.DirectoriesRepository;
 import mipt.app.secondmemory.repository.FilesRepository;
 import mipt.app.secondmemory.repository.FilesS3RepositoryImpl;
@@ -377,5 +380,16 @@ public class FilesService {
       }
     }
     return flag;
+  }
+
+  public FilesAndFoldersInfoDto getDirectoryInfo(Long folderId) {
+    List<FileInfoResponse> files =
+        filesRepository.findByFolderId(folderId).stream().map(FilesMapper::toFileDto).toList();
+
+    List<FolderDto> folders =
+        foldersJpaRepository.findByParentId(folderId).stream()
+            .map(FoldersMapper::toFolderDto)
+            .toList();
+    return FilesAndFoldersInfoDto.builder().files(files).folders(folders).build();
   }
 }

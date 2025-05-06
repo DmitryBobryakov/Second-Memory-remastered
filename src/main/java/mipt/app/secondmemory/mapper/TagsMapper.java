@@ -7,6 +7,6 @@ import mipt.app.secondmemory.entity.TagEntity;
 @UtilityClass
 public class TagsMapper {
   public TagDto toDto(TagEntity tagEntity) {
-    return TagDto.builder().name(tagEntity.getName()).build();
+    return TagDto.builder().id(tagEntity.getId()).name(tagEntity.getName()).build();
   }
 }

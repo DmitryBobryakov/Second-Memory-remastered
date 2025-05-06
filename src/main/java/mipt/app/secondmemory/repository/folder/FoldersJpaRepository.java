@@ -1,9 +1,12 @@
 package mipt.app.secondmemory.repository.folder;
 
+import mipt.app.secondmemory.dto.directory.FolderDto;
 import mipt.app.secondmemory.entity.FolderEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface FoldersJpaRepository extends JpaRepository<FolderEntity, Long> {
   @Query(
@@ -25,4 +28,6 @@ public interface FoldersJpaRepository extends JpaRepository<FolderEntity, Long> 
               """,
       nativeQuery = true)
   String takePathToFolder(@Param("nodeId") Long nodeId);
+
+  List<FolderEntity> findByParentId(Long parentId);
 }
