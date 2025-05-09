@@ -77,7 +77,6 @@ public class FilesService {
   private final KafkaTemplate<String, String> kafkaTemplate;
   private final FoldersJpaRepository foldersJpaRepository;
   private final BucketsJpaRepository bucketsJpaRepository;
-
   private final FilesS3RepositoryImpl filesS3Repository;
   private final MinioClient client;
 
@@ -85,7 +84,7 @@ public class FilesService {
   private final DirectoriesRepository directoriesRepository;
   private final RolesRepository rolesRepository;
 
-  public ModelAndView downloadFile(String bucketName, String key)
+  public ModelAndView downloadFile(Long fileId)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -95,11 +94,19 @@ public class FilesService {
           InvalidResponseException,
           XmlParserException,
           InternalException,
-          FileNotFoundException {
+          FileNotFoundException,
+          BucketNotFoundException {
     log.debug("Функция по скачиванию файла вызвана в сервисе");
-    if (!checkFileExists(bucketName, key)) {
-      throw new FileNotFoundException("File does not exist on the way: " + bucketName + "/" + key);
-    }
+    FileEntity file = filesRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
+    String pathToFolder =
+        "%s/".formatted(foldersJpaRepository.takePathToFolder(file.getFolderId()));
+    String fileName = file.getName();
+    String key = pathToFolder + fileName;
+    String bucketName =
+        bucketsJpaRepository
+            .findById(file.getBucketId())
+            .orElseThrow(BucketNotFoundException::new)
+            .getName();
     return filesS3Repository.downloadFile(bucketName, key);
   }
 

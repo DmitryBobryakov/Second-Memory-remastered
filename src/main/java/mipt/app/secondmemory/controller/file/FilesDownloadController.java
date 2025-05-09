@@ -10,17 +10,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+
+import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 @Tag(name = "Download File", description = "Скачивание файла")
 public interface FilesDownloadController {
-  @GetMapping("/files/download/{bucketName}")
-  ModelAndView download(
-      @PathVariable(name = "bucketName") String bucketName, @RequestParam String key)
+  @GetMapping("/files/download")
+  ModelAndView download(@RequestParam(name = "fileId") Long fileId)
       throws ServerException,
           InsufficientDataException,
           FileNotFoundException,
@@ -30,5 +30,6 @@ public interface FilesDownloadController {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException;
+          InternalException,
+          BucketNotFoundException;
 }

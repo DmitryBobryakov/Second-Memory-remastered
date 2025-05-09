@@ -13,6 +13,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.service.FilesService;
 import org.springframework.stereotype.Controller;
@@ -29,12 +30,12 @@ public class FilesDownloadControllerImpl implements FilesDownloadController {
 
   private Counter getFilesRequestCounter(String type) {
     return Counter.builder("files.requests")
-            .description("Number of files requests by type")
-            .tags("type", type)
-            .register(registry);
+        .description("Number of files requests by type")
+        .tags("type", type)
+        .register(registry);
   }
 
-  public ModelAndView download(String bucketName, String key)
+  public ModelAndView download(Long fileId)
       throws ServerException,
           InsufficientDataException,
           FileNotFoundException,
@@ -44,8 +45,9 @@ public class FilesDownloadControllerImpl implements FilesDownloadController {
           InvalidKeyException,
           InvalidResponseException,
           XmlParserException,
-          InternalException {
+          InternalException,
+          BucketNotFoundException {
     getFilesRequestCounter("download").increment();
-    return filesService.downloadFile(bucketName, key);
+    return filesService.downloadFile(fileId);
   }
 }
