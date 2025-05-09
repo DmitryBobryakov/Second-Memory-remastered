@@ -18,8 +18,8 @@ public class FilesMapper {
         .bucketId(fileEntity.getBucketId())
         .folderId(fileEntity.getFolderId())
         .fileOwnerId(fileEntity.getOwnerId())
-        .fileLastModifiedDate(fileEntity.getLastModifiedTs())
-        .fileCreationDate(fileEntity.getCreationTs())
+        .fileLastModifiedDate(fileEntity.getLastModifiedTs().getTime())
+        .fileCreationDate(fileEntity.getCreationTs().getTime())
         .build();
   }
 

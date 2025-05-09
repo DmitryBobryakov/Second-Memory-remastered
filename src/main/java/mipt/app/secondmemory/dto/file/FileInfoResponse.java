@@ -9,7 +9,7 @@ public record FileInfoResponse(
     String fileName,
     long fileCapacity,
     Long fileOwnerId,
-    Timestamp fileCreationDate,
-    Timestamp fileLastModifiedDate,
+    long fileCreationDate,
+    long fileLastModifiedDate,
     Long bucketId,
     Long folderId) {}
