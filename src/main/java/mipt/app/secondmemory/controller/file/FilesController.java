@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "File API", description = "Управление файлами")
 public interface FilesController {
@@ -47,7 +48,7 @@ public interface FilesController {
   @PostMapping("/files/upload/{bucketId}")
   ResponseEntity<FileInfoResponse> uploadFile(
       @PathVariable(name = "bucketId") Long bucketId,
-      @RequestParam("file") Part file,
+      @RequestBody MultipartFile file,
       @CookieValue("token") String cookieValue)
       throws ServerException,
           InsufficientDataException,
@@ -123,7 +124,7 @@ public interface FilesController {
   @PostMapping("/files/upload/folder/{folderId}")
   ResponseEntity<FileInfoResponse> uploadFileToFolder(
       @PathVariable(name = "folderId") Long folderId,
-      @RequestParam("file") Part file,
+      @RequestParam("file") MultipartFile file,
       @CookieValue("token") String cookieValue)
       throws NoSuchDirectoryException,
           BucketNotFoundException,

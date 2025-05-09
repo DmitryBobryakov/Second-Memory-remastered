@@ -85,8 +85,8 @@ public class BucketService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public List<String> getAllBucketsNames() {
+  public List<BucketDto> getAllBucketsNames() {
     log.debug("Функция по взятию всех файлов вызвана в сервисе");
-    return bucketsJpaRepository.findAll().stream().map(BucketMapper::toBucketName).toList();
+    return bucketsJpaRepository.findAll().stream().map(BucketMapper::toBucketDto).toList();
   }
 }

@@ -44,6 +44,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @Slf4j
@@ -63,7 +64,7 @@ public class FilesControllerImpl implements FilesController {
   }
 
   @Override
-  public ResponseEntity<FileInfoResponse> uploadFile(Long bucketId, Part file, String cookieValue)
+  public ResponseEntity<FileInfoResponse> uploadFile(Long bucketId, MultipartFile file, String cookieValue)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -172,7 +173,7 @@ public class FilesControllerImpl implements FilesController {
 
   @Override
   public ResponseEntity<FileInfoResponse> uploadFileToFolder(
-      Long folderId, Part file, String cookieValue)
+      Long folderId, MultipartFile file, String cookieValue)
       throws NoSuchDirectoryException,
           BucketNotFoundException,
           ServerException,

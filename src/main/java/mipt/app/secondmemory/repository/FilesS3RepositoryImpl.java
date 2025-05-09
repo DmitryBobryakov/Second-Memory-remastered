@@ -24,6 +24,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 @Repository
@@ -55,7 +56,7 @@ public class FilesS3RepositoryImpl {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT)
-  public void uploadFile(String bucketName, Part file)
+  public void uploadFile(String bucketName, MultipartFile file)
       throws IOException,
           InsufficientDataException,
           ErrorResponseException,
@@ -70,7 +71,7 @@ public class FilesS3RepositoryImpl {
         bucketName,
         file.getName());
 
-    String fileName = file.getSubmittedFileName();
+    String fileName = file.getOriginalFilename();
     InputStream fileInputStream = file.getInputStream();
 
     client.putObject(
@@ -146,7 +147,7 @@ public class FilesS3RepositoryImpl {
     deleteFile(oldBucketName, oldKey);
   }
 
-  public void uploadFileToFolder(String bucketName, Part file, String pathToFolder)
+  public void uploadFileToFolder(String bucketName, MultipartFile file, String pathToFolder)
       throws IOException,
           ServerException,
           InsufficientDataException,
@@ -156,7 +157,7 @@ public class FilesS3RepositoryImpl {
           InvalidResponseException,
           XmlParserException,
           InternalException {
-    String fileName = file.getSubmittedFileName();
+    String fileName = file.getOriginalFilename();
     InputStream fileInputStream = file.getInputStream();
 
     client.putObject(

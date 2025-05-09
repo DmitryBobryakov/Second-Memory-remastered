@@ -60,7 +60,7 @@ public class BucketsControllerImpl implements BucketsController {
   }
 
   @Override
-  public ResponseEntity<List<String>> getAllBucketsNames() {
+  public ResponseEntity<List<BucketDto>> getAllBucketsNames() {
     return ResponseEntity.ok(bucketService.getAllBucketsNames());
   }
 }

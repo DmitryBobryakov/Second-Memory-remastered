@@ -57,6 +57,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 @Service
@@ -98,7 +99,7 @@ public class FilesService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public FileInfoResponse uploadFile(Long bucketId, Part file, User user)
+  public FileInfoResponse uploadFile(Long bucketId, MultipartFile file, User user)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -279,7 +280,7 @@ public class FilesService {
     return FilesMapper.toFileDto(fileEntity);
   }
 
-  public FileInfoResponse uploadFileToFolder(Long folderId, Part file, User user)
+  public FileInfoResponse uploadFileToFolder(Long folderId, MultipartFile file, User user)
       throws NoSuchDirectoryException,
           BucketNotFoundException,
           ServerException,

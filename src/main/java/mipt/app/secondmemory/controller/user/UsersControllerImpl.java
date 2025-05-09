@@ -151,11 +151,10 @@ public class UsersControllerImpl implements UsersController {
 
   @Override
   @PostMapping("/logout")
-  public ResponseEntity<String> logOut(String requestUuid, HttpServletResponse response)
-      throws UserNotFoundException {
-    log.debug("UsersController -> logOut() -> Accepted request user with uuid {}", requestUuid);
-    Long uuid = Long.parseLong(requestUuid);
-    Session session = sessionsRepository.findByUserId(uuid).orElseThrow(UserNotFoundException::new);
+  public ResponseEntity<String> logOut(String cookieValue, HttpServletResponse response)
+      throws SessionNotFoundException {
+    log.debug("UsersController -> logOut() -> Accepted request");
+    Session session = sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
     sessionsRepository.delete(session);
 
     Cookie cookie = new Cookie("token", null);
@@ -165,7 +164,7 @@ public class UsersControllerImpl implements UsersController {
     cookie.setPath("/");
     response.addCookie(cookie);
 
-    log.debug("UsersController -> logOut() -> Successfully logged out user with uuid {}", uuid);
+    log.debug("UsersController -> logOut() -> Successfully logged out user");
 
     return ResponseEntity.ok("You have successfully log out. See you soon!");
   }
