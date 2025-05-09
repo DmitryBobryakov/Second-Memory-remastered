@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -21,16 +20,17 @@ import java.util.List;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.FilesAndFoldersInfoDto;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
+import mipt.app.secondmemory.dto.file.FileDetailsDto;
 import mipt.app.secondmemory.dto.file.FileInfoRequest;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
-import mipt.app.secondmemory.exception.file.DatabaseException;
 import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
 import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
+import mipt.app.secondmemory.exception.user.UserNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -141,12 +141,11 @@ public interface FilesController {
 
   @Operation(summary = "Получение информации о файле по ID")
   @ApiResponse(responseCode = "200", description = "Информация о файле получена")
-  @GetMapping("/info/file/{fileId}")
-  ResponseEntity<FileInfoResponse> getFileInfo(
-      @Parameter(description = "ID файла") @PathVariable("fileId") long fileId,
-      @Parameter(description = "ID пользователя") @RequestBody FileInfoRequest fileInfoRequest,
+  @PostMapping("/info/file/{fileId}")
+  ResponseEntity<FileDetailsDto> getFileInfo(
+      @Parameter(description = "ID файла") @PathVariable("fileId") Long fileId,
       @CookieValue("token") String cookieValue)
-      throws FileNotFoundException, DatabaseException, SessionNotFoundException;
+      throws FileNotFoundException, SessionNotFoundException, BucketNotFoundException, UserNotFoundException;
 
   @Operation(summary = "Получение информации о файлах в папке по пути до папки и названию бакета")
   @ApiResponse(responseCode = "200", description = "Информация о файлах в папке получена")

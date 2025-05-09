@@ -14,7 +14,7 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.messages.Item;
-import jakarta.servlet.http.Part;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -24,19 +24,19 @@ import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.FilesAndFoldersInfoDto;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
-import mipt.app.secondmemory.dto.file.FileInfoRequest;
+import mipt.app.secondmemory.dto.file.FileDetailsDto;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.entity.Role;
 import mipt.app.secondmemory.entity.Session;
 import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
-import mipt.app.secondmemory.exception.file.DatabaseException;
 import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
 import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.exception.role.NoRoleFoundException;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
+import mipt.app.secondmemory.exception.user.UserNotFoundException;
 import mipt.app.secondmemory.repository.RolesRepository;
 import mipt.app.secondmemory.repository.SessionsRepository;
 import mipt.app.secondmemory.service.FilesService;
@@ -58,13 +58,14 @@ public class FilesControllerImpl implements FilesController {
 
   private Counter getFilesRequestCounter(String type) {
     return Counter.builder("files.requests")
-            .description("Number of files requests by type")
-            .tags("type", type)
-            .register(registry);
+        .description("Number of files requests by type")
+        .tags("type", type)
+        .register(registry);
   }
 
   @Override
-  public ResponseEntity<FileInfoResponse> uploadFile(Long bucketId, MultipartFile file, String cookieValue)
+  public ResponseEntity<FileInfoResponse> uploadFile(
+      Long bucketId, MultipartFile file, String cookieValue)
       throws ServerException,
           InsufficientDataException,
           ErrorResponseException,
@@ -197,9 +198,11 @@ public class FilesControllerImpl implements FilesController {
   }
 
   @Override
-  public ResponseEntity<FileInfoResponse> getFileInfo(
-      long fileId, FileInfoRequest fileInfoRequest, String cookieValue)
-      throws FileNotFoundException, DatabaseException, SessionNotFoundException {
+  public ResponseEntity<FileDetailsDto> getFileInfo(Long fileId, String cookieValue)
+      throws FileNotFoundException,
+          SessionNotFoundException,
+          BucketNotFoundException,
+          UserNotFoundException {
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
     Role userRole =
@@ -211,7 +214,7 @@ public class FilesControllerImpl implements FilesController {
         && userRole.getType() != OWNER) {
       throw new AuthorizationDeniedException("You don't have permission to read file information");
     }
-    return ResponseEntity.ok(filesService.getFileInfo(fileId, fileInfoRequest));
+    return ResponseEntity.ok(filesService.getFileDetails(fileId, userRole.getType()));
   }
 
   @Override

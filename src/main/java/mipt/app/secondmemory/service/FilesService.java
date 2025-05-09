@@ -12,7 +12,6 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 import io.minio.messages.Item;
-import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -25,9 +24,10 @@ import mipt.app.secondmemory.dto.directory.DirectoryInfoRequest;
 import mipt.app.secondmemory.dto.directory.FilesAndFoldersInfoDto;
 import mipt.app.secondmemory.dto.directory.FolderDto;
 import mipt.app.secondmemory.dto.directory.RootDirectoriesRequest;
-import mipt.app.secondmemory.dto.file.FileInfoRequest;
+import mipt.app.secondmemory.dto.file.FileDetailsDto;
 import mipt.app.secondmemory.dto.file.FileInfoResponse;
 import mipt.app.secondmemory.dto.file.MessageFileDto;
+import mipt.app.secondmemory.dto.tag.TagDto;
 import mipt.app.secondmemory.entity.BucketEntity;
 import mipt.app.secondmemory.entity.FileEntity;
 import mipt.app.secondmemory.entity.FolderEntity;
@@ -37,16 +37,17 @@ import mipt.app.secondmemory.entity.User;
 import mipt.app.secondmemory.exception.directory.BucketNotFoundException;
 import mipt.app.secondmemory.exception.directory.NoSuchBucketException;
 import mipt.app.secondmemory.exception.directory.NoSuchDirectoryException;
-import mipt.app.secondmemory.exception.file.DatabaseException;
 import mipt.app.secondmemory.exception.file.FileAlreadyExistsException;
 import mipt.app.secondmemory.exception.file.FileMemoryLimitExceededException;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
+import mipt.app.secondmemory.exception.user.UserNotFoundException;
 import mipt.app.secondmemory.mapper.FilesMapper;
 import mipt.app.secondmemory.mapper.FoldersMapper;
 import mipt.app.secondmemory.repository.DirectoriesRepository;
 import mipt.app.secondmemory.repository.FilesRepository;
 import mipt.app.secondmemory.repository.FilesS3RepositoryImpl;
 import mipt.app.secondmemory.repository.RolesRepository;
+import mipt.app.secondmemory.repository.UsersRepository;
 import mipt.app.secondmemory.repository.bucket.BucketsJpaRepository;
 import mipt.app.secondmemory.repository.folder.FoldersJpaRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,6 +66,8 @@ import org.springframework.web.servlet.ModelAndView;
 @RequiredArgsConstructor
 public class FilesService {
   private final ObjectMapper objectMapper;
+  private final UsersRepository usersRepository;
+  private final TagsService tagsService;
 
   @Value("${mipt.app.servlet.part.file-memory-limit}")
   private long fileMemoryLimit;
@@ -318,18 +321,6 @@ public class FilesService {
     return FilesMapper.toFileDto(fileEntity);
   }
 
-  @Cacheable(
-      cacheNames = {"fileInfo"},
-      key = "{#fileId}")
-  public FileInfoResponse getFileInfo(long fileId, FileInfoRequest fileInfoRequest)
-      throws FileNotFoundException, DatabaseException {
-    log.debug("File ID: {}, User ID: {}", fileId, fileInfoRequest.userId());
-    return filesRepository
-        .findById(fileId)
-        .map(FilesMapper::toFileDto)
-        .orElseThrow(() -> new DatabaseException("Cannot select file data from DB"));
-  }
-
   public List<FileInfoResponse> searchFiles(String name) {
     return filesRepository.findByNameLike(name).stream().map(FilesMapper::toFileDto).toList();
   }
@@ -392,5 +383,31 @@ public class FilesService {
             .map(FoldersMapper::toFolderDto)
             .toList();
     return FilesAndFoldersInfoDto.builder().files(files).folders(folders).build();
+  }
+
+  public FileDetailsDto getFileDetails(Long fileId, RoleType role)
+      throws FileNotFoundException, BucketNotFoundException, UserNotFoundException {
+    FileEntity file = filesRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
+    List<TagDto> tags = tagsService.getAllTagsByFileId(fileId);
+    String ownerName =
+        usersRepository
+            .findById(file.getOwnerId())
+            .orElseThrow(UserNotFoundException::new)
+            .getName();
+    String bucketName =
+        bucketsJpaRepository
+            .findById(file.getBucketId())
+            .orElseThrow(BucketNotFoundException::new)
+            .getName();
+    return FileDetailsDto.builder()
+        .role(role.toString())
+        .size(file.getCapacity())
+        .tags(tags)
+        .ownerName(ownerName)
+        .fileName(file.getName())
+        .creationTs(file.getCreationTs().getTime())
+        .lastModifiedTs(file.getLastModifiedTs().getTime())
+        .bucketName(bucketName)
+        .build();
   }
 }
