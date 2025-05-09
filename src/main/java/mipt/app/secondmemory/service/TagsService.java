@@ -37,14 +37,6 @@ public class TagsService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public TagDto createTag(String name) {
-    log.debug("Функция по созданию тега c name: {} вызвана в сервисе", name);
-    TagEntity tagEntity = TagEntity.builder().name(name).build();
-    tagsRepository.save(tagEntity);
-    return TagsMapper.toDto(tagEntity);
-  }
-
-  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
   public FileTagDto deleteTagWithFileId(Long tagId, Long fileId)
       throws FileNotFoundException, TagNotFoundException {
     log.debug(
@@ -68,24 +60,27 @@ public class TagsService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public FileTagDto addTagToFile(Long tagId, Long fileId)
-      throws FileNotFoundException, TagNotFoundException {
+  public FileTagDto addTagToFile(Long fileId, String tagName) throws FileNotFoundException {
     log.debug("Функция по удалению тега вызвана в сервисе");
     if (!filesRepository.existsById(fileId)) {
       throw new FileNotFoundException("File does not exists with fileId: " + fileId);
     }
-    if (!tagsRepository.existsById(tagId)) {
-      throw new TagNotFoundException("Tag does not exists with tagId: " + tagId);
+    TagEntity tagEntity;
+    if (!tagsRepository.existsByName(tagName)) {
+      tagEntity = TagEntity.builder().name(tagName).build();
+      tagsRepository.save(tagEntity);
+    } else {
+      tagEntity = tagsRepository.findByName(tagName);
     }
     CrsFileTagEntity crsFileTag = new CrsFileTagEntity();
     crsFileTag.setFileId(fileId);
-    crsFileTag.setTagId(tagId);
+    crsFileTag.setTagId(tagEntity.getId());
     crsFilesTagsRepository.save(crsFileTag);
     FileEntity fileEntity =
         filesRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
     fileEntity.setLastModifiedTs(Timestamp.from(Instant.now()));
     filesRepository.save(fileEntity);
-    return new FileTagDto(tagId, fileId);
+    return new FileTagDto(tagEntity.getId(), fileId);
   }
 
   @Transactional(readOnly = true)

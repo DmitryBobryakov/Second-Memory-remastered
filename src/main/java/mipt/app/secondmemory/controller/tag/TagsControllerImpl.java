@@ -32,14 +32,9 @@ public class TagsControllerImpl implements TagsController {
   }
 
   @Override
-  public ResponseEntity<TagDto> createTag(String name) {
-    return ResponseEntity.status(201).body(tagsService.createTag(name));
-  }
-
-  @Override
-  public ResponseEntity<FileTagDto> addTagToFile(Long tagId, Long fileId)
-      throws TagNotFoundException, FileNotFoundException {
-    return ResponseEntity.ok(tagsService.addTagToFile(tagId, fileId));
+  public ResponseEntity<FileTagDto> addTagToFile(Long fileId, String tagName)
+      throws FileNotFoundException {
+    return ResponseEntity.status(201).body(tagsService.addTagToFile(fileId, tagName));
   }
 
   @Override

@@ -26,13 +26,10 @@ public interface TagsController {
       @RequestParam(name = "tagId") Long tagId, @RequestParam(name = "fileId") Long fileId)
       throws TagNotFoundException, FileNotFoundException;
 
-  @PostMapping("/tags/create")
-  ResponseEntity<TagDto> createTag(@RequestParam(name = "name") String name);
-
   @PostMapping("/tags/add/tag/to/file")
   ResponseEntity<FileTagDto> addTagToFile(
-      @RequestParam(name = "tagId") Long tagId, @RequestParam(name = "fileId") Long fileId)
-      throws TagNotFoundException, FileNotFoundException;
+      @RequestParam(name = "fileId") Long fileId, @RequestParam(name = "tagName") String tagName)
+      throws FileNotFoundException;
 
   @PostMapping("/tags/get/all/by/file")
   ResponseEntity<List<TagDto>> getAllTagsByFile(@RequestParam(name = "fileId") Long fileId);
