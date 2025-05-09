@@ -52,7 +52,7 @@ public class TagsControllerImpl implements TagsController {
   }
 
   @Override
-  public ResponseEntity<FileTagDto> addTagToFile(Long fileId, String tagName, String cookieValue)
+  public ResponseEntity<TagDto> addTagToFile(Long fileId, String tagName, String cookieValue)
       throws FileNotFoundException, SessionNotFoundException {
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);

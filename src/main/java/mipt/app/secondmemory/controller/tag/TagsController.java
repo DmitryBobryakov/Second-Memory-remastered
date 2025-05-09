@@ -22,7 +22,7 @@ public interface TagsController {
   ResponseEntity<TagDto> getTag(@PathVariable(name = "tagId") Long tagId)
       throws TagNotFoundException;
 
-  @DeleteMapping("/tags/delete/by/file/")
+  @DeleteMapping("/tags/delete/by/file")
   ResponseEntity<FileTagDto> deleteTagByFile(
       @RequestParam(name = "tagId") Long tagId,
       @RequestParam(name = "fileId") Long fileId,
@@ -30,7 +30,7 @@ public interface TagsController {
       throws TagNotFoundException, FileNotFoundException, SessionNotFoundException;
 
   @PostMapping("/tags/add/tag/to/file")
-  ResponseEntity<FileTagDto> addTagToFile(
+  ResponseEntity<TagDto> addTagToFile(
       @RequestParam(name = "fileId") Long fileId,
       @RequestParam(name = "tagName") String tagName,
       @CookieValue("token") String cookieValue)

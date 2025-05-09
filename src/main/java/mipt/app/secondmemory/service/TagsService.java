@@ -60,7 +60,7 @@ public class TagsService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public FileTagDto addTagToFile(Long fileId, String tagName) throws FileNotFoundException {
+  public TagDto addTagToFile(Long fileId, String tagName) throws FileNotFoundException {
     log.debug("Функция по удалению тега вызвана в сервисе");
     if (!filesRepository.existsById(fileId)) {
       throw new FileNotFoundException("File does not exists with fileId: " + fileId);
@@ -80,7 +80,7 @@ public class TagsService {
         filesRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
     fileEntity.setLastModifiedTs(Timestamp.from(Instant.now()));
     filesRepository.save(fileEntity);
-    return new FileTagDto(tagEntity.getId(), fileId);
+    return new TagDto(tagEntity.getId(), tagEntity.getName());
   }
 
   @Transactional(readOnly = true)
