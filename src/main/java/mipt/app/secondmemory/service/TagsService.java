@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mipt.app.secondmemory.dto.tag.FileTagDto;
 import mipt.app.secondmemory.dto.tag.TagDto;
 import mipt.app.secondmemory.entity.CrsFileTagEntity;
+import mipt.app.secondmemory.entity.FileEntity;
 import mipt.app.secondmemory.entity.TagEntity;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.exception.tag.TagNotFoundException;
@@ -16,6 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -56,6 +60,10 @@ public class TagsService {
             .findByTagIdAndFileId(tagId, fileId)
             .orElseThrow(TagNotFoundException::new);
     crsFilesTagsRepository.delete(crsFileTag);
+    FileEntity fileEntity =
+        filesRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
+    fileEntity.setLastModifiedTs(Timestamp.from(Instant.now()));
+    filesRepository.save(fileEntity);
     return new FileTagDto(tagId, fileId);
   }
 
@@ -73,6 +81,10 @@ public class TagsService {
     crsFileTag.setFileId(fileId);
     crsFileTag.setTagId(tagId);
     crsFilesTagsRepository.save(crsFileTag);
+    FileEntity fileEntity =
+        filesRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
+    fileEntity.setLastModifiedTs(Timestamp.from(Instant.now()));
+    filesRepository.save(fileEntity);
     return new FileTagDto(tagId, fileId);
   }
 

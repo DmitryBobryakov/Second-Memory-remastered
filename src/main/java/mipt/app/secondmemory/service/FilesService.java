@@ -15,6 +15,8 @@ import io.minio.messages.Item;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -179,6 +181,7 @@ public class FilesService {
     }
     filesS3Repository.renameFile(bucketName, oldKey, newKey);
     fileEntity.setName(newFileName);
+    fileEntity.setLastModifiedTs(Timestamp.from(Instant.now()));
     filesRepository.save(fileEntity);
     return FilesMapper.toFileDto(fileEntity);
   }
