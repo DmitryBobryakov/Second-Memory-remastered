@@ -2,7 +2,6 @@ package mipt.app.secondmemory.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.dto.tag.FileTagDto;
 import mipt.app.secondmemory.dto.tag.TagDto;
 import mipt.app.secondmemory.entity.CrsFileTagEntity;
 import mipt.app.secondmemory.entity.FileEntity;
@@ -37,7 +36,7 @@ public class TagsService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-  public FileTagDto deleteTagWithFileId(Long tagId, Long fileId)
+  public TagDto deleteTagWithFileId(Long tagId, Long fileId)
       throws FileNotFoundException, TagNotFoundException {
     log.debug(
         "Функция по удалению тега у файла вызвана в сервисе. tagId: {}, fileId: {}", tagId, fileId);
@@ -47,6 +46,7 @@ public class TagsService {
     if (!tagsRepository.existsById(tagId)) {
       throw new TagNotFoundException("Tag does not exists with tagId: " + tagId);
     }
+    TagEntity tag = tagsRepository.findById(tagId).orElseThrow(TagNotFoundException::new);
     CrsFileTagEntity crsFileTag =
         crsFilesTagsRepository
             .findByTagIdAndFileId(tagId, fileId)
@@ -56,7 +56,7 @@ public class TagsService {
         filesRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
     fileEntity.setLastModifiedTs(Timestamp.from(Instant.now()));
     filesRepository.save(fileEntity);
-    return new FileTagDto(tagId, fileId);
+    return TagsMapper.toDto(tag);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
@@ -80,7 +80,7 @@ public class TagsService {
         filesRepository.findById(fileId).orElseThrow(FileNotFoundException::new);
     fileEntity.setLastModifiedTs(Timestamp.from(Instant.now()));
     filesRepository.save(fileEntity);
-    return new TagDto(tagEntity.getId(), tagEntity.getName());
+    return TagsMapper.toDto(tagEntity);
   }
 
   @Transactional(readOnly = true)

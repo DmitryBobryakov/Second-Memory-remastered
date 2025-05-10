@@ -331,7 +331,6 @@ public class FilesService {
   }
 
   public List<FileInfoResponse> searchFiles(String name) {
-    System.out.println(name);
     return filesRepository.findByNameLike(name).stream().map(FilesMapper::toFileDto).toList();
   }
 

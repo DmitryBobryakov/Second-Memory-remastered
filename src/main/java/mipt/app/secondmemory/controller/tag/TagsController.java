@@ -2,7 +2,6 @@ package mipt.app.secondmemory.controller.tag;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
-import mipt.app.secondmemory.dto.tag.FileTagDto;
 import mipt.app.secondmemory.dto.tag.TagDto;
 import mipt.app.secondmemory.exception.file.FileNotFoundException;
 import mipt.app.secondmemory.exception.session.SessionNotFoundException;
@@ -23,7 +22,7 @@ public interface TagsController {
       throws TagNotFoundException;
 
   @DeleteMapping("/tags/delete/by/file")
-  ResponseEntity<FileTagDto> deleteTagByFile(
+  ResponseEntity<TagDto> deleteTagByFile(
       @RequestParam(name = "tagId") Long tagId,
       @RequestParam(name = "fileId") Long fileId,
       @CookieValue("token") String cookieValue)

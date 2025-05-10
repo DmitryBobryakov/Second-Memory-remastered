@@ -6,7 +6,6 @@ import static mipt.app.secondmemory.entity.RoleType.WRITER;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mipt.app.secondmemory.dto.tag.FileTagDto;
 import mipt.app.secondmemory.dto.tag.TagDto;
 import mipt.app.secondmemory.entity.Role;
 import mipt.app.secondmemory.entity.Session;
@@ -37,7 +36,7 @@ public class TagsControllerImpl implements TagsController {
   }
 
   @Override
-  public ResponseEntity<FileTagDto> deleteTagByFile(Long tagId, Long fileId, String cookieValue)
+  public ResponseEntity<TagDto> deleteTagByFile(Long tagId, Long fileId, String cookieValue)
       throws TagNotFoundException, FileNotFoundException, SessionNotFoundException {
     Session session =
         sessionsRepository.findByCookie(cookieValue).orElseThrow(SessionNotFoundException::new);
