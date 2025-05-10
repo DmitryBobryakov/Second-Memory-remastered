@@ -167,7 +167,7 @@ public interface FilesController {
       throws NoSuchBucketException;
 
   @PostMapping("/file-search")
-  ResponseEntity<List<FileInfoResponse>> searchFilesInDirectory(@RequestBody String name);
+  ResponseEntity<List<FileInfoResponse>> searchFilesInDirectory(@RequestParam("name") String name);
 
   @PostMapping("/directory/{folderId}")
   ResponseEntity<FilesAndFoldersInfoDto> getDirectoryInfo(
