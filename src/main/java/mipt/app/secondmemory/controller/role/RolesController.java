@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 
 public interface RolesController {
-  ResponseEntity<String> addRole(@RequestBody RoleDto roleDto, @CookieValue String cookieValue)
+  ResponseEntity<String> addRole(@RequestBody RoleDto roleDto, @CookieValue("token") String cookieValue)
       throws UserNotFoundException, FileNotFoundException, SessionNotFoundException;
 
-  ResponseEntity<String> removeRole(@RequestBody RoleDto roleDto, @CookieValue String cookieValue)
+  ResponseEntity<String> removeRole(@RequestBody RoleDto roleDto, @CookieValue("token") String cookieValue)
       throws UserNotFoundException, SessionNotFoundException;
 }

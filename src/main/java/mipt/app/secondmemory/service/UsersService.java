@@ -103,8 +103,21 @@ public class UsersService {
     }
     User user = usersRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
     Role newRole = new Role(user, file, roleType);
-    user.getRoles().add(newRole);
-    usersRepository.save(user);
+    try {
+      Role currRole =
+          rolesRepository
+              .findByUserIdAndFileId(user.getId(), file.getId())
+              .orElseThrow(NoRoleFoundException::new);
+      if (currRole.getType() == roleType) {
+        return;
+      }
+      user.getRoles().remove(currRole);
+      user.getRoles().add(newRole);
+      usersRepository.save(user);
+    } catch (NoRoleFoundException e) {
+      user.getRoles().add(newRole);
+      usersRepository.save(user);
+    }
   }
 
   @Transactional
